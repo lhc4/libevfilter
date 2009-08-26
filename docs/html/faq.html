@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+ <head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+  <title>Evfilter library</title>
+  <style type="text/css" title="currentStyle" media="screen">
+	  @import "style.css";
+  </style>
+ </head>
+ <body>
+  <h1>
+   <img src="evfilter.png" alt="(logo)">
+   Evfilter library documentation
+  </h1>
+  <div id="upper-menu">
+   <a href="index.html">Home</a> |
+   <a href="faq.html">FAQ</a> |
+   <a href="filters.html">Filters</a> |
+   <a href="profile.html">Profile</a> |
+   <a href="filter.html">Filter api</a> |
+   <a href="library.html">Library api</a>
+  </div>
+  <h2>F.A.Q.</h2>
+   <dl>
+    <dt>What is evfilter library?</dt>
+    <dd>
+     Evfilter library aims to be userspace library for input event filtering.
+     Input event layer is linux kernel layer for all HID and other human interface
+     devices connected to the computer.<br> Evfilter library is transparent layer
+     between you and kernel that can modify these events.<br>
+    </dd><br>
+    <dt>How are events filtered/modified?</dt>
+    <dd>
+     Evfilter library implements filter api. Filter is something similar to
+     kernel module. When filter is loaded, it's initalized and added into linked
+     list of filters. Filter gets some events and sends some events to the next
+     filter (or back to the application, when end of the list is reached).
+     Linked list of filters can be created per device and devices can be merged
+     together by <i>barrier</i> filter.
+    </dd><br>
+    <dt>What is implemented so far?</dt>
+    <dd>
+     The code is mostly finished. Hotplug support is in progress.<br>
+     System-wide and app-defined profiles are finished and working.<br>
+     However the code is in alpha state, so testing is needed.
+    </dd><br>
+    <dt>What is profile?</dt>
+    <dd>
+     Profile is evfilter configuration. There are two types of profiles,
+     system-wide profile located in <i>/etc/evfilter/profile/</i> and application
+     defined profiles.<br>
+     Profile consist of files. <i>Profilerc</i> file, that defines matching
+     rules and files to load, when rules are fulfilled. The rest of files
+     defines lists of modules along with their parameters.<br>
+     For more see <a href="profile.html">detailed profile description</a>.
+    </dd><br>
+    <dt>What is this good for?</dt>
+    <dd>
+     Well, that is good question. This library was created in order to
+     standardized inteface for:
+    <br>
+    <ul>
+     <li>Touchscreen callibration and filters. (as tslib is old hack that doesn't play nice with event layer)</li>
+     <li>Console applications as gpm. (as gpm is even older hack that doesn't work either)<br>
+         And is not easy to rewrite gpm without such library.
+     </li>
+    </ul><br>
+    So far I have two plans with evfilter library. Rewrite gmp so that it's able
+    to work with touchscreens and more. That goal is close to be finished, stay
+    tuned ;). Second goal is to hack X-server input driver to use evfilter
+    library so we can do much more magic with input devices in X-server.
+   </dd>
+  </dl>
+  <p>&nbsp;</p>
+  <hr>
+  copyright &copy; metan 2009
+ </body>
+</html>

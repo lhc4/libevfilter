@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+ <head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+  <title>Evfilter library</title>
+  <style type="text/css" title="currentStyle" media="screen">
+	  @import "style.css";
+  </style>
+ </head>
+ <body>
+ <h1>
+  <img src="evfilter.png" alt="(logo)">
+  Evfilter library documentation
+ </h1>
+ <div id=upper-menu>
+  <a href="index.html">Home</a> |
+  <a href="faq.html">FAQ</a> | 
+  <a href="filters.html">Filters</a> | 
+  <a href="profile.html">Profile</a> | 
+  <a href="filter.html">Filter api</a> |
+  <a href="library.html">Library api</a>
+ </div>
+ 
+ <h2>Detailed profile description</h2>
+ <h3>About profile</h3>
+ <p>
+  Profile is name for evfilter configuration. This configuration consit of
+  rules that are sayning which filter(s) to load for specific device and
+  parameters for these filters.<br>
+  In a running system, there is one special, system profile, that should be
+  used for system wide configuration, this is especially suitable for
+  touchscreen callibration, persistent button renaming, and so on. This system
+  profile is located in <i>/etc/evfilter/profile/</i> directory.
+ </p>
+
+ <h3>profilerc</h3>
+  <p>
+   File profilerc is place for rules. There are four types of keywords
+   accordingly to attributes listed in <i>/proc/bus/input/devices</i> and one
+   special keyword used to load filters defined in file.
+  </p>
+
+   <table border="1px" rules="rows">
+    <tr>
+     <td>
+      <b>Device</b>
+     </td>
+     <td>
+      Path to the input device in <i>/dev</i> filesystem. As a matter of fact
+      minor and major number are compared.<br>
+
+      Don't use this unless you really know what you are doing. Paths in
+      <i>/dev/</i> filesystem are dynamically allocated unless you use some
+      udev magic.
+     </td>
+    </tr>
+    <tr>
+     <td>
+      <b>Name</b>
+     </td>
+     <td>
+      Device name as it comes from the hardware. Usually something like
+      <i>"ImPS/2 Logitech Wheel Mouse"</i> or <i>"AT Translated Set 2
+      keyboard"</i><br>
+     </td>
+    </tr>
+    <tr>
+     <td>
+      <b>Phys</b>
+     </td>
+     <td>
+      Identifies specific connector in the computer the device is connected to.
+     </td>
+    </tr>
+    <tr>
+     <td>
+      <b>Bits</b>
+     </td>
+     <td>
+      Identifies range of events that this device is able to generate. For
+      example relative coordinates.<br>
+      <i>TODO:</i> this is not correctly implemented yet. :(
+     </td>
+    </tr>
+    <tr>
+     <td>
+      <b>File</b>
+     </td>
+     <td>
+      File with filter(s) to load when rule was fulfilled.
+     </td>
+    </tr>
+   </table>
+
+  <p>
+   The generall syntax of file consist of lines, every line begins with one the
+   keywords followed by whitespace. The rest of the line till the newline
+   character is value for that keyword.<br>
+
+   When any of rules before the first occurence of <i>File</i> keyword is
+   fulfilled, this file is loaded and filters defined in this file are attached
+   to the list of filters for this device.
+  </p>
+
+  <p>
+  In the following example file mouse.evf will be loaded for mouse connected to 
+  the ps2 connector and file set_keys.evf either for AT Translated keyboards or
+  for asus extra buttons.
+<pre>
+ Phys isa0060/serio1/input0
+ File mouse.evf
+ Name AT Translated Set 2 keyboard
+ Name Asus EeePC extra buttons
+ File set_keys.evf
+</pre>
+  </p>
+
+
+  <h3>filter configuration</h3>
+  <p>
+
+   Value for the <i>File</i> keyword in the previous paragraph is path to the
+   file containing list of filters to load and their parameters. This file
+   consist of blocks and each block defines one filter configuration starting
+   with <i>FilterName = actual name</i> and ending with <i>EndFilter</i>.
+   Enclosed betwen these two keywords there is a place for filter parameters.
+   Each filter has it's own parameters defined.
+   <br>TODO: page with filters and parameters.<br>
+  </p>
+
+   Following example says to load filter name <i>SpeedMod</i> with parameters
+   <i>Xmod = 10</i> and <i>Ymod = 10</i>
+
+<pre>
+ FilterName = SpeedMod
+         Xmod = 10
+         Ymod = 10
+ EndFilter
+</pre>  
+
+ <p>&nbsp;</p>
+ <hr>
+ copyright &copy; metan 2009
+ </font>
+ </body>
+</html>

@@ -1,0 +1,29 @@
+   ___ .   .   ___ . .   ____  ___  __
+  /    |  /  /    / /     /   /    /  /
+ ---   | /  /--  / /     /   ---  /--
+/___   |/  /    / /___  /   /___ /  |
+
+* http://metan.ucw.cz/evfilter/
+
+--------------------------------------
+
+
+Fix profilerc newline at the end bug.
+
+
+Fix errors from profile loader, you can still get internal error from there.
+
+
+Compulsory and not compulsory parameters.
+
+
+Filter dependencies?
+
+
+Loading profile accordingly to input device bits.
+
+
+Create filter scale_abs with default kernel callbiration for absolute events.
+
+
+Automatize process of generating keys.h in compilation.

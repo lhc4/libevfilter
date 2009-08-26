@@ -1,0 +1,4 @@
+FilterName = SpeedMod
+	Xmod = 100
+	Ymod = 100
+EndFilter

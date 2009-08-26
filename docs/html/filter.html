@@ -1,0 +1,341 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+ <head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+  <title>Evfilter library</title>
+  <style type="text/css" title="currentStyle" media="screen">
+	  @import "style.css";
+  </style>
+ </head>
+ <body>
+ <h1>
+  <img src="evfilter.png" alt="evfilter logo">
+  Evfilter library documentation
+ </h1>
+ <div id="upper-menu">
+  <a href="index.html">Home</a> |
+  <a href="faq.html">FAQ</a> |
+  <a href="filters.html">Filters</a> |
+  <a href="profile.html">Profile</a> |
+  <a href="filter.html">Filter api</a> |
+  <a href="library.html">Library api</a>
+ </div>
+ 
+ <h2>Filter api</h2>
+ 
+ <p>
+  Welcome, this part of documentation describes how filters works and how to
+  create filter yourself.
+ </p>
+ 
+ <p>
+  Generally filter in this library is black box that has some events on input
+  and sends some events to output. For every event on input, filter can
+  generate none or many events on output.
+ </p>
+
+ <p>
+  In the following text there are two meaings for word filter, the first one is
+  filter implementation and the second one is filter structure allocated on
+  heap. Filter implementation gererally are static functions that belongs to
+  filter and two non static functions, so they are propagated to object files
+  and can be used by linker. Any of these two non static functions can be used
+  to allocate and initalize filter on the heap. First one does the allocation
+  and initalization, but in contrast to the second one takes some number of
+  filter parameters. This function is inteded to be used directly from C code.
+  The second one takes parameters as one string, parses them and usually calls
+  the first one that does the allocation. This function is called when filter
+  configuration is loaded from file.
+ </p>
+
+ <h3>Filter parameters</h3>
+ 
+ <p>
+  Filter parameters comes to the filter as signle string consisting of
+  <i>name=value</i> pairs separated by whitespaces. Whitespaces in parameter
+  name are not allowed and parameter value containing whitespaces must be
+  enclosed in quotes or double quotes. There are no escape characters for
+  quotes. The rest of the syntax is defined freely, multiple whitespaces are
+  counted as one, pamameter name is terminated with either whitespace and/or
+  equality sign so all following examples are correct; <i>name value</i>,
+  <i>name=value</i>, <i>name= 'value'</i>, <i>name = "value"</i>, ...
+ </p>
+ 
+ <p>
+  Don't worry, functions for parsing filter parameters are also available. All
+  you need to do is to create parameter description.  Parameter description is
+  constant field of <i>struct evf_param</i> terminated with <i>{NULL, 0,
+  NULL}</i>.
+ </p>
+
+ <p>
+  Typical parameter description example:
+<pre>
+ <font color="green">static struct</font> evf_param my_filter_params[] = {
+ 	{ <font color="red">"treshold"</font>, evf_int, <font color="red">NULL</font> };
+ 	{ <font color="red">"key"</font>     , evf_key, <font color="red">NULL</font> };
+ 	{ <font color="red">NULL</font>      ,       <font color="red">0</font>, <font color="red">NULL</font> };
+ };
+</pre>
+ </p>
+ 
+ <p>
+ Closer description of <i>struct evf_param</i>:
+<pre>
+ <font color="green">struct</font> evf_param {
+ 	<font color="green">char</font> *name;
+ 	<font color="green">enum</font> evf_param_t type;
+ 	<font color="green">void</font> *lim;
+ };
+</pre>
+ 
+ <table border="1px" rules="rows">
+  <tr>
+   <td valign="top">
+    <font color="green">char</font>&nbsp;*name;
+   </td>
+   <td>
+   Null terminated string, parameter name in configuration.
+   </td>
+  </tr>
+  <tr>
+   <td valign="top">
+    <font color="green">enum</font>&nbsp;evf_param_t&nbsp;type;
+   </td>
+   <td> 
+    Parameter type, one of following:<br>
+    <dl> 
+     <dt>evf_key</dt>
+      <dd>Key name, see keyparser directory in sources for details.</dd>
+     <dt>evf_keys</dt>
+      <dd>Field of keys, currently broken.</dd>
+     <dt>evf_int</dt>
+      <dd>Integer.</dd>
+     <dt>evf_float</dt>
+      <dd>Float.</dd>
+     <dt>evf_str</dt>
+      <dd>Null terminated string.</dd>
+     <dt>evf_file</dt>
+      <dd>
+      File, <i>FILE*</i> pointer is returned. There are two special filenames
+      <i>stderr</i> and <i>stdout</i> that returns pointer to stderr
+      respectively to stdout.</dd>
+    </dl>
+   </td>
+  </tr>
+  <tr>
+   <td valign="top">
+    <font color="green">void</font>&nbsp;*lim;
+   </td>
+   <td>
+    Additional limits for the type. Usually pointer to another structure, see
+    <i>evfilter_param.h</i> for details.
+   </td>
+  </tr>
+ </table>
+ </p>
+
+ <p>
+  On filter initalization, parameter description along with corresponding
+  variables is passed to <i>evf_load_param()</i> function. This function has
+  variable number of parameters and it's used in similar manner as printf.
+ </p>
+
+<pre>
+ <font color="green">int</font> evf_load_params(<font color="green">union</font> evf_err *err, <font color="green">char</font> *cfg, <font color="green">struct</font> evf_param params[], ...);
+</pre>
+
+ <p>
+  Don't concentrate on the <i>union evf_err *err</i> and <i>char *cfg</i> now,
+  they are coming as an part of filter initalization to us. For previous example
+  the initialization would look like:
+
+<pre>
+ <font color="green">int</font> treshold, key;
+
+ <font color="brown">if</font> (evf_load_params(err, cfg, my_filter_params, &treshold, &key) == -<font color="red">1</font>)
+	<font color="brown">return</font> <font color="red">NULL</font>;
+</pre>
+ 
+  On success zero is returned, parameters are parsed and filled into
+  corresponding variables. On failure -1 is returned and <i>struct evf_err
+  *err</i> is filled, so we need just to return <i>NULL</i> to inform higher
+  layers that filter initalization has failed.
+ </p>
+
+
+ <h3>Evfilter implementation</h3>
+ <p>
+  Lets start with brief evfilter structure description. When filter
+  initalization routine is called, this structure is allocated on the heap and
+  it's members are assigned.
+ </p>
+ 
+ 
+ You can find <i>struct evf_filter</i> definition in file <i>evfilter_struct.h</i>.
+
+<pre>
+ <font color="green">struct</font> evf_filter {
+	 <font color="green">void</font> (*modify)(<font color="green">struct</font> evf_filter *self, <font color="green">struct</font> input_event *ev);
+	 <font color="green">void</font> *(*free)(<font color="green">struct</font> evf_filter *self);
+	 <font color="green">char</font> *name;
+	 <font color="green">char</font> *desc;
+	 <font color="green">struct</font> evf_filter *next;
+
+	 <font color="green">char</font> data[];
+ }
+</pre>
+  
+ <table border="1px" rules="rows">
+  <tr>
+   <td valign="top">
+    <font color="green">void</font>&nbsp;(*modify)(<font color="green">struct</font>&nbsp;evf_filter&nbsp;*self,&nbsp;<font color="green">struct</font>&nbsp;input_event&nbsp;*ev);
+   </td>
+   <td>
+    This is the most important member of <i>struct evf_filter</i> every event
+    passed to your filter comes through this function. 
+   </td>
+  </tr>
+  <tr>
+   <td valign="top">
+    <font color="green">void</font> *(*free)(<font color="green">struct</font> evf_filter *self);
+   </td>
+   <td>
+    Additional free helper. Either set to <i>NULL</i> or to pointer to the
+    function that does additional cleanups. Note that evfilter structure itself
+    is freed automaticaly.<br>
+    Ignore mind the void* return type here, that's for internal purposes. Just
+    return <i>NULL</i> in your implementation.
+   </td>
+  </tr>
+  <tr>
+   <td valign="top">
+    <font color="green">char</font> *name;
+   </td>
+   <td>
+    Filter name, null terminated string.
+   </td>
+  </tr>
+  <tr>
+   <td valign="top">
+    <font color="green">desc</font> *name;
+   </td>
+   <td>
+    Short filter description, null terminated string.
+   </td>
+  </tr>
+  <tr>
+   <td valign="top">
+    <font color="green">struct</font> evf_filter *next;
+   </td>
+   <td>
+    Next filter in linked list. Set initially to <i>NULL</i>.
+   </td>
+  </tr> 
+  <tr>
+   <td valign="top">
+    <font color="green">char</font> *data[];
+   </td>
+   <td>
+    Pointer to private data. In case your filter is not stateless, so that it
+    needs to hold some data per instance, allocate some extra space after
+    filter structure and use this as a pointer to it.
+   </td>
+  </tr> 
+ </table>
+ 
+ <p>
+  As you may see, most of the structure members are straightforward to
+  understand. However at least one member deserves closer description. We will
+  look on the modify function now.<br>
+
+  This function gets two parameters, the first one is filter itself or it's
+  better to say pointer to its instance allocated on the heap. The second
+  parameter is input event structure as defined in
+  <i>/usr/include/linux/input.h</i>.<br>
+
+  All filter logic is implemented in this function or in functions called from
+  it's context. As all input events comes through this function it must be
+  atomic, that means all  functions that can cause long sleep are forbiden.
+  Moreover the time spend in this function should be minimal, in order not to
+  create lags.
+ </p>
+
+ <p>
+  Let's start with simple example that sends all events to the next filter.
+
+<pre>
+<font color="green">void</font> modify(<font color="green">struct</font> evf_filter *self, <font color="green">struct</font> input_event *ev) {
+	self->next(self->next, ev);
+}
+</pre>
+
+  We don't need to check for the end of the linked list as there is special filter named <i>commit</i> on the end.
+ </p>
+
+ <p>
+
+  Now we will create filter that generates mouse clicks when pressure on
+  touchscreen overruns some value. To do that we need to know a little about
+  anatomy of input event.<br>
+
+  Every input event carries part of an information, for example mouse has moved
+  five points on the X scale up and the coputer has registered this information
+  at specified time. In order not to move only diagonally special sync event
+  was introduced. The sync event means, that's all folks now you can compute
+  the position of the pointer and draw it on the screen.<br>
+
+  When creating filter one must to think about the right timing of the events,
+  it's quite easy to forgotten to filter out sync events correctly.  
+
+ </p>
+
+<pre>
+<font color="green">void</font> modify(<font color="green">struct</font> evf_filter *self, <font color="green">struct</font> input_event *ev) {
+
+	<font color="green">struct</font> my_filter_state *state = (<font color="green">struct</font> my_filter_state*) self->data;
+	
+	<font color="blue">/* Touchscreen pressure is absolute event */</font>
+	<font color="brown">if</font> (ev->type == EV_ABS && ev->code == ABS_PRESSURE) {
+		
+		<font color="brown">if</font> (!state->is_pressed && ev->value > TRESHOLD) {
+			ev->type  = EV_KEY;
+			ev->code  = BTN_LEFT;
+			ev->value = <font color="red">1</font>;
+			
+			self->next(self->next, ev);
+
+			state->is_pressed = <font color="red">1</font>;
+		}
+		
+		<font color="brown">if</font> (state->is_pressed && ev->value < TRESHOLD) {
+			ev->type  = EV_KEY;
+			ev->code  = BTN_LEFT;
+			ev->value = <font color="red">0</font>;
+		
+			self->next(self->next, ev);
+			
+			state->is_pressed = <font color="red">0</font>;
+		}
+		
+		<font color="brown">return</font>;
+	}
+	
+	<font color="blue">/* 
+	 * We are propagating rest of the events to the next filter 
+	 * and trust that the sync events are send by the touchscreen
+	 * driver.
+	 */</font>
+	self->next(self->next, ev);
+}
+</pre>
+ 
+ <h2>Putting it all together</h2>
+
+
+ <p>&nbsp;</p>
+ <hr>
+ copyright &copy; metan 2009
+ </font>
+ </body>
+</html>

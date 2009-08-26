@@ -1,0 +1,367 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+ <head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+  <title>Evfilter library</title>
+  <style type="text/css" title="currentStyle" media="screen">
+	  @import "style.css";
+  </style>
+ </head>
+ <body>
+ <h1>
+  <img src="evfilter.png" alt="(logo)">
+  Evfilter library documentation
+ </h1>
+ <div id=upper-menu>
+  <a href="index.html">Home</a> |
+  <a href="faq.html">FAQ</a> | 
+  <a href="filters.html">Filters</a> | 
+  <a href="profile.html">Profile</a> | 
+  <a href="filter.html">Filter api</a> |
+  <a href="library.html">Library api</a>
+ </div>
+ 
+ <h2>List of implemeted filters</h2>
+ <table border="1px" rules="rows">
+  <tr>
+   <td><a href="#Barrier">Barrier</a></td>
+  </tr>
+  <tr>
+   <td><a href="#Commit">Commit</a></td>
+  </tr>
+  <tr>
+   <td><a href="#Dump">Dump</a></td>
+  </tr>
+  <tr>
+   <td><a href="#NoRepeat">NoRepeat</a></td>
+  </tr>
+  <tr>
+   <td><a href="#PressureToKey">PressureToKey</a></td>
+  </tr>
+  <tr>
+   <td><a href="#ScaleAbs">ScaleAbs</a></td>
+  </tr>
+  <tr>
+   <td><a href="#WeightedAverageAbs">WeightedAverageAbs</a></td>
+  </tr>
+  <tr>
+   <td><a href="#Mirror">Mirror</a></td>
+  </tr>
+  <tr>
+   <td><a href="#Rotage">Rotate</a></td>
+  </tr>
+ </table>
+ 
+ <a name=Barrier><h3>Barrier</h3></a>
+ <p>
+  This filter implements barrier that holds events until sync event comes. This
+  is especially usefull when routing several sources of input events so that
+  they are not mixed up.
+ </p>
+ <table border="1px" rules="rows">
+  Parameters<br><br>
+  <tr>
+   <td>
+    <b>History</b>
+   </td>
+   <td>
+    unsiged interger
+   </td>
+   <td>
+    Maximal number of events in queue. For most of the cases 10 should be enough.
+   </td>
+  </tr>
+ </table>
+
+<a name=Commit><h3>Commit</h3></a>
+ <p>
+  This filter is interally used to commit filtered event
+  back to the application. This filter is automatically 
+  added at the end of filter line.
+ </p>
+ 
+ <a name=Dump><h3>Dump</h3></a>
+ <p>
+  This filter writes human readable decomposition of event into file
+  (or stdout or strerr). Usefull for debuging.
+ </p>
+ <table border="1px" rules="rows">
+  Parameters<br><br>
+  <tr>
+   <td>
+    <b>Prefix</b>
+   </td>
+   <td>
+    string
+   </td>
+   <td>
+    Prefix for all lines printed by this filter.
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <b>File</b>
+   </td>
+   <td>
+    path to file
+   </td>
+   <td>
+    File to print the decomposition to.
+   </td>
+  </tr>
+ </table>
+ 
+ <a name=NoRepeat><h3>NoRepeat</h3></a>
+ <p>
+  This filter eats all key repeat events.
+ </p>
+ 
+ <a name=PressureToKey><h3>PressureToKey</h3></a>
+ <p>
+  Converts pressure events to key down/up events when pressure exceeds
+  treshold. Usefull for mouse button emulation on touchscreen.
+ </p>
+ <table border="1px" rules="rows">
+  Parameters<br><br>
+  <tr>
+   <td>
+    <b>Treshold</b>
+   </td>
+   <td>
+    integer
+   </td>
+   <td>
+    Treshold value.
+   </td>
+  </tr>
+  <tr> 
+   <td>
+    <b>Key</b>
+   </td>
+   <td>
+    key name
+   </td>
+   <td>
+    Name of the key.
+   </td>
+  </tr>
+ </table>
+ 
+ <a name=ScaleAbs><h3>ScaleAbs</h3></a>
+ <p>
+  Performs touchscreen callibration by scaling absolute events to range from 0
+  to MAX_INT. Some other filters needs this filter to be loaded in order to
+  work properly. 
+ </p>
+ <table border="1px" rules="rows">
+  Parameters<br><br>
+  <tr>
+   <td>
+    <b>MinX</b>
+   </td>
+   <td>
+    integer
+   </td>
+   <td>
+    Minimal X value.
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <b>MaxX</b>
+   </td>
+   <td>
+    integer
+   </td>
+   <td>
+    Maximal X value.
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <b>MinY</b>
+   </td>
+   <td>
+    integer
+   </td>
+   <td>
+    Minimal Y value.
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <b>MaxY</b>
+   </td>
+   <td>
+    integer
+   </td>
+   <td>
+    Maximal Y value.
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <b>MinP</b>
+   </td>
+   <td>
+    integer
+   </td>
+   <td>
+    Minimal Pressure.
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <b>MaxP</b>
+   </td>
+   <td>
+    integer
+   </td>
+   <td>
+    Maximal Pressure.
+   </td>
+  </tr>
+ </table>
+
+ <a name=SpeedModRel><h3>SpeedModRel</h3></a>
+ <p>
+  Slown down relative pointer by Xmod and Ymod.
+ </p>
+ <table border="1px" rules="rows">
+  Parameters<br><br>
+  <tr>
+   <td>
+    <b>Xmod</b>
+   </td>
+   <td>
+    integer
+   </td>
+   <td>
+    Coeficient for the X coordinate.
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <b>Ymod</b>
+   </td>
+   <td>
+    integer
+   </td>
+   <td>
+    Coeficient for the Y coordinate.
+   </td>
+  </tr>
+ </table>
+ 
+ <a name=WeightedAverageAbs><h3>WeightedAverageAbs</h3></a>
+ <p>
+  This filter does weighted average with logarithmic weights of absolute X, Y and pressure samples.<br>
+  TODO: This filter wasn't tested yet. 
+ </p>
+ <table border="1px" rules="rows">
+  Parameters<br><br>
+  <tr>
+   <td>
+    <b>Samples</b>
+   </td>
+   <td>
+    integer
+   </td>
+   <td>
+    Number of samples to hold in history. Practically it should be something between 1 and 5.
+   </td>
+  </tr>
+ </table>
+
+ <a name=Mirror><h3>Mirror</h3></a>
+ <p>
+  This filter mirrors relative and absolute events. For mirroring absolute
+  events filter ScaleAbs must be loaded before this filter. 
+ </p>
+ <table border="1px" rules="rows">
+  Parameters<br><br>
+  <tr>
+   <td>
+    <b>MirrorRelX</b>
+   </td>
+   <td>
+    bool
+   </td>
+   <td>
+    Mirrors relative X events by changing the sign.
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <b>MirrorRelY</b>
+   </td>
+   <td>
+    bool
+   </td>
+   <td>
+    Mirrors relative Y events by changing the sign.
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <b>MirrorAbsX</b>
+   </td>
+   <td>
+    bool
+   </td>
+   <td>
+    Mirrors Absolute X events.
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <b>MirrorAbsY</b>
+   </td>
+   <td>
+    bool
+   </td>
+   <td>
+    Mirrors Absolute Y events.
+   </td>
+  </tr>
+ </table>
+ 
+ <a name=Rotate><h3>Rotate</h3></a>
+ <p>
+
+  Rotates absolute or relative events by exchanging X and Y coordinates. 
+ 
+ </p>
+ <table border="1px" rules="rows">
+  Parameters<br><br>
+  <tr>
+   <td>
+    <b>RotateAbs</b>
+   </td>
+   <td>
+    bool
+   </td>
+   <td>
+    Exchange X and Y for absolute events.
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <b>RotateRel</b>
+   </td>
+   <td>
+    bool
+   </td>
+   <td>
+    Exchange X and Y for relative events.
+   </td>
+  </tr>
+ </table>
+
+
+ <p>&nbsp;</p>
+ <hr>
+ copyright &copy; metan 2009
+ </font>
+ </body>
+</html>

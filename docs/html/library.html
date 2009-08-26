@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+ <head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+  <title>Evfilter library</title>
+  <style type="text/css" title="currentStyle" media="screen">
+	  @import "style.css";
+  </style>
+ </head>
+ <body>
+ <h1>
+  <img src="evfilter.png" alt="evfilter logo">
+  Evfilter library documentation
+ </h1>
+ <div id="upper-menu">
+  <a href="index.html">Home</a> |
+  <a href="faq.html">FAQ</a> |
+  <a href="filters.html">Filters</a> |
+  <a href="profile.html">Profile</a> |
+  <a href="filter.html">Filter api</a> |
+  <a href="library.html">Library api</a>
+ </div>
+ 
+ <h2>Library api</h2>
+ 
+ <p>
+  Evfilter library constists of many api levels. This page explains complete
+  evfilter api although you may need only smal part of it. In this case scroll
+  down to see only the high level inteface.
+ </p>
+ 
+
+ <h3>Evfilter filter api</h3>
+ 
+<pre>
+ <font color="green">struct</font> evf_filter *evf_filter_load(<font color="green">const char</font> *name, <font color="green">char</font> *params, <font color="green">union</font> evf_err *err); 
+</pre>
+  
+  <p>
+   Create filter instance on the heap accordingly to it's name and parameters.
+   Returns pointer on success otherwise <i>NULL</i> is returned and struct
+   evf_err is filled with error description.
+  </p>
+  
+  <i>Note:</i> the string params is modified during the parsing.
+
+<pre>
+ <font color="green">void</font> *evf_filter_free(<font color="green">struct</font> evf_filter *filter);
+</pre>
+
+  <p>
+   Destroy filter, as filter could have additional cleanup function it's not safe
+   to call just <i>free(filter)</i> however it may work in most of the cases.
+   The pointer returned by this function is used for internal purposes.
+  </p>
+
+<pre>
+ <font color="green">void</font> *evf_filters_free(<font color="green">struct</font> evf_filter *root);
+</pre>
+
+  <p>
+   Destroys linked list of filters.
+  </p>
+
+<pre>
+ <font color="green">const char</font> *evf_filter_get_name(<font color="green">struct</font> evf_filter *filter);
+</pre>
+
+  <p>
+   Returns pointer to filter name.
+  </p>
+
+<pre>
+ <font color="green">const char</font> *evf_filter_get_desc(<font color="green">struct</font> evf_filter *filter);
+</pre>
+
+  <p>
+   Returns pointer to short filter description.
+  </p>
+
+<pre>
+ <font color="green">struct</font> evf_filter *evf_filters_last(<font color="green">struct</font> evf_filter *root);
+</pre>
+
+  <p>
+   Returns pointer to the last filter in linked list.
+  </p>
+
+<pre>
+ <font color="green">struct</font> evf_filter *evf_filters_merge(<font color="green">struct</font> evf_filter *root, <font color="green">struct</font> evf_filter *filters);
+</pre>
+
+  <p>
+   Merge two linked list by appending second list after the first one.
+  </p>
+
+<pre>
+ <font color="green">void</font> evf_filters_print(<font color="green">struct</font> evf_filter *root);
+</pre>
+
+  <p>
+   Prints structure of linked list into stdout. Use for debugging only.
+  </p>
+
+ <h3>Linux input</h3>
+ <p>
+  Functions that can ease work with linux input interface. To be able to use
+  them include <i>linux_input.h</i> as this header is not included in
+  <i>evfilter.h</i>. 
+ </p>
+
+<pre>
+ <font color="green">int</font> evf_input_get_version(<font color="green">int</font> fd, <font color="green">int</font> version);
+</pre>
+ <p>
+ Wrapper to ioctl, returns <i>0</i> on succes. Example to print actual version: <br><i>printf("%d %d %d", version>>16, version>>8 & 0xff, version & 0xff);</i>
+ 
+ </p>
+
+<pre>
+ <font color="green">int</font> evf_input_get_name(<font color="green">int</font> fd, <font color="green">char</font> *buf, <font color="green">size_t</font> buf_len);
+</pre>
+  <p>
+   Wrapper to ioctl, returns <i>0</i> on success and copy up to buf_len
+   characters of device name to buf. The string is allways null terminated.
+  </p>
+
+<pre>
+ <font color="green">int</font> evf_input_get_phys(<font color="green">int</font> fd, <font color="green">char</font> *buf, <font color="green">size_t</font> buf_len);
+</pre>
+  <p>
+   Wrapper to ioctl, returns <i>0</i> on success and copy up to buf_len
+   characters of device phys path to buf. The string is allways null terminated.
+  </p>
+
+<pre>
+ <font color="green">int</font> evf_input_compare(<font color="green">int</font> fd, <font color="green">const char</font> *path);
+</pre>
+  <p>
+   Compares minor and major number for file descriptor and file pointed by
+   path. Returns <i>-1</i> on error, <i>0</i> for different devices, <i>1</i>
+   for both pointing to the same device.
+  </p>
+
+<pre>
+ <font color="green">int</font> evf_input_print(<font color="green">FILE</font> *file, <font color="green">const char</font> *prefix, <font color="green">struct</font> input_event *ev);
+</pre>
+  <p>
+   Prints event in human-readable format to the file and all the lines will be
+   prefixed with prefix. Example with prefix <i>" *** "</i> for some types of
+   events follows.
+  </p>
+<pre>
+ *** ev->type:  EV_REL    
+ *** ev->code:  REL_Y      (1)
+ *** ev->value: 1
+
+ *** ev->type: EV_SYN
+
+ *** ev->type:  EV_KEY    
+ *** ev->code:  Key_LeftCtrl (29)
+ *** ev->value: KEY_DOWN   (1)
+    
+ ...
+</pre>
+
+
+ <p>&nbsp;</p>
+ <hr>
+ copyright &copy; metan 2009
+ </font>
+ </body>
+</html>

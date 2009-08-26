@@ -1,0 +1,4 @@
+Name Asus EeePC extra buttons
+File asus_extra_buttons.evf
+Device /dev/input/event6
+File mouse.evf

@@ -1,0 +1,46 @@
+   ___ .   .   ___ . .   ____  ___  __
+  /    |  /  /    / /     /   /    /  /
+ ---   | /  /--  / /     /   ---  /--
+/___   |/  /    / /___  /   /___ /  |
+
+* http://metan.ucw.cz/evfilter/
+
+--------------------------------------
+
+
+How to build
+------------
+
+Type 'make' in this directory. 
+
+Currently evfilter depends on linux input
+headers and inotify support.
+
+
+How to install
+--------------
+
+This software is in alpha state, so
+'make install' doesn't do anything yet.
+
+In order to test system profiles you 
+need to create system profile in your 
+/etc. Example for this is in ./etc/ 
+directory.
+
+
+How to use
+----------
+
+There is nice documentation on evfilter
+homepage (also available in doc/html directory).
+
+Manpages are not written yet.
+
+For some examples of library inteface see 
+test/ directory.
+
+
+Have a fun!
+ 
+ -- metan{at}ucw.cz

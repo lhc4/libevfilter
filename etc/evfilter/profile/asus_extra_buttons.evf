@@ -1,0 +1,24 @@
+FilterName = Dump
+	Prefix = "********: "
+	File   = stdout
+EndFilter
+
+FilterName = Btn2Rel
+	KeyUp     = Key_Coffee
+	keyDown   = Key_Zoom
+	KeyRight  = Key_Prog2
+	KeyLeft   = Key_Prog3
+	LeftBtn   = Key_Enter
+	RightBtn  = Key_Enter
+	MiddleBtn = Key_Enter
+EndFilter
+
+FilterName = Dump
+	Prefix = "****: "
+	File   = stdout
+EndFilter
+
+FilterName = SpeedMod
+	xmod = 4
+	ymod = 4
+EndFilter
