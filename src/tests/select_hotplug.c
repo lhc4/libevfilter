@@ -38,20 +38,20 @@
 
 static struct evf_select_queue *queue;
 
-static int read_event(struct evf_select_memb *self, struct evf_select_queue *queue)
+static int read_event(struct evf_select_memb *self)
 {
 	struct input_event ev;
 
 	if (read(self->fd, &ev, sizeof(struct input_event)) < 0) {
-		close(self->fd);
-		evf_select_rem(queue, self->fd);
+		printf("read failed, closing fd %i\n", self->fd);
+		return EVF_SEL_REM | EVF_SEL_CLOSE;
 	}
 	
 	printf("event from fd %i\n", self->fd);
 
 	evf_input_print(stdout, " *** ", &ev);
 
-	return 0;
+	return EVF_SEL_OK;
 }
 
 static void device_plugged(const char *dev)
@@ -70,10 +70,9 @@ static void device_plugged(const char *dev)
 	evf_select_add(queue, fd, read_event, NULL);
 }
 
-static int hotplug_rescan(struct evf_select_memb *self, struct evf_select_queue *queue)
+static int hotplug_rescan(struct evf_select_memb *self)
 {
 	(void) self;
-	(void) queue;
 
 	evf_hotplug_rescan();
 	

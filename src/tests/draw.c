@@ -29,21 +29,21 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <SDL.h>
 #include <SDL_gfxPrimitives.h>
 #include "evfilter.h"
 
 #define X_RES 900
 #define Y_RES 500
-#define MAX_INPUTS 20
 
 static SDL_Surface *scr;
 
 int init_sdl(void)
 {
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 		return 0;
-	}
 
 	scr = SDL_SetVideoMode(X_RES, Y_RES, 32, SDL_HWSURFACE);
 	SDL_WM_SetCaption("Draw", "Draw");
@@ -57,109 +57,125 @@ void draw(unsigned int x, unsigned int y, uint32_t color)
 		SDL_UpdateRect(scr, x-1, y-1, 2, 2);
 }
 
-/*
- * My internal structure
- */
-struct input_device {
-	uint16_t x;
-	uint16_t y;
-
-	int id;
+struct pointer {
+	int x;
+	int old_x;
+	int y;
+	int old_y;
+	int color;
 };
 
-/*
- * This is callback function, we get all events here.
- */
-void commit(struct input_event *ev, void *data)
+static int read_event(struct evf_select_memb *self, struct evf_select_queue *queue)
 {
-	struct input_device *dev = (struct input_device*) data;
+	struct input_event ev;
+	struct pointer *dev = self->data;
 
-	switch (ev->type) {
-		case EV_REL:
-			switch (ev->code) {
-				case REL_X:
-					dev->x += ev->value;
-				break;
-				case REL_Y:
-					dev->y += ev->value;
-				break;
-			}
-		break;
-		case EV_SYN:
-			if (dev->id == 1)
-				draw(dev->x, dev->y, 0xffffffff);
-			else
-				draw(dev->x, dev->y, 0xffff00ff);
-		break;
-		default:
-		break;
+	if (read(self->fd, &ev, sizeof(struct input_event)) > 0) {
+		
+		switch (ev.type) {
+			case EV_REL:
+				switch (ev.code) {
+					case REL_X:
+						dev->old_x = dev->x;
+						dev->x += ev.value;
+					break;
+					case REL_Y:
+						dev->old_y = dev->y;
+						dev->y += ev.value;
+					break;
+				}
+			break;
+			case EV_SYN: {
+
+				filledCircleColor(scr, dev->x, dev->y, 1, 0xff0000ff);
+				lineColor(scr, dev->x, dev->y, dev->old_x, dev->old_y, dev->color);
+				SDL_UpdateRect(scr, 0, 0, X_RES, Y_RES);
+			} break;
+		}
+	} else {
+		fprintf(stderr, "Device unplugged!\n");
+		free(dev);
+		close(self->fd);
+		evf_select_rem(queue, self->fd);
 	}
+
+	return 0;
+}
+
+static struct evf_select_queue *queue;
+
+static int read_hotplug(struct evf_select_memb *self, struct evf_select_queue *queue)
+{
+	evf_hotplug_rescan();
+	
+	return 0;
+}
+
+static int text_y = 0;
+
+static void device_plugged(const char *dev)
+{
+	struct pointer *ptr;
+	int fd;
+
+
+	fprintf(stderr, "Device plugged!\n");
+
+	fd  = open(dev, O_RDONLY);
+
+	if (fd < -1) {
+		fprintf(stderr, "Can't open %s: %s\n", dev, strerror(errno));
+		return;
+	}
+
+	ptr = malloc(sizeof(struct pointer));
+
+	if (ptr == NULL) {
+		fprintf(stderr, "Can't allocate memory.\n");
+		close(fd);
+		return;
+	}
+
+	ptr->x = X_RES/2;
+	ptr->y = Y_RES/2;
+	ptr->old_x = X_RES/2;
+	ptr->old_y = Y_RES/2;
+	ptr->color = 0x000000ff | (random() % 0xff0000);
+
+	evf_select_add(queue, fd, read_event, ptr);
+
+	stringColor(scr, 10, 10 + text_y, dev, 0xff0000ff);
+	SDL_UpdateRect(scr, 0, 0, X_RES, Y_RES);
+	text_y+=10;
 }
 
 int main(int argc, char *argv[])
 {
-	struct evf_line *line[10];
-	struct input_device dev[10];
-	int i, used = 0, max_fd = -1;
-	fd_set rfds;
 	union evf_err err;
-
-	if (argc > MAX_INPUTS) {
-		fprintf(stderr, "Maximal number of inputs is %i.\n", MAX_INPUTS);
-		return 1;
-	}
-
+	int fd;
+	
 	if (!init_sdl()) {
 		fprintf(stderr, "SDL init failed\n");
 		return 1;
 	}
+	
+	queue = evf_select_new();
 
-	/* Create input lines */
-	for (i = 1; i < argc; i++) {
-		printf("Opening device `%s' ... ", argv[i]);
-
-		line[used] = evf_line_create(argv[i], commit, &dev[used], 20, &err);
-
-		if (line[used] == NULL) {
-			printf("failed\n");
-			evf_err_print(&err);
-		} else {
-			printf("ok\n");
-			dev[used].x  = X_RES/2;
-			dev[used].y  = Y_RES/2;
-			dev[used].id = used + 1;
-			used++;
-		}
-	}
-
-	if (used == 0) {
-		fprintf(stderr, "Cannot initalize any input devices!\n");
+	if (queue == NULL) {
+		fprintf(stderr, "Can't allocate select queue!\n");
 		return 1;
 	}
-	
-	/* choose maximal fd for select */
-	for (i = 0; i < used; i++) {
-		if (max_fd < line[i]->fd)
-			max_fd = line[i]->fd;
+
+	if ((fd = evf_hotplug_init(device_plugged, NULL)) == -1) {
+		fprintf(stderr, "Hotplug init failed: %s\n", strerror(errno));
+		return 1;
 	}
 
-	/* use select to wait for data on any input device */
-	for (;;) {
-		FD_ZERO(&rfds);	
-		
-		for (i = 0; i < used; i++)
-			FD_SET(line[i]->fd, &rfds);
+	evf_select_add(queue, fd, read_hotplug, NULL);
 
-		if (select(max_fd+1, &rfds, NULL, NULL, NULL) < 0) {
-			fprintf(stderr, "select(): %s", strerror(errno));
-			return 1;
-		}
-		
-		for (i = 0; i < used; i++)
-			if (FD_ISSET(line[i]->fd, &rfds)) {
-				evf_line_process(line[i]);
-			}
-	}
+
+	for (;;)
+		evf_select(queue);
 
 	return 0;
 }

@@ -134,7 +134,7 @@ void evf_input_print(FILE *file, const char *prefix, struct input_event *ev)
 	if (ev->type < 13)
 		fprintf(file, "%s\n", ev_type[ev->type]);
 	else
-		fprintf(file, "UNKNOWN\n");
+		fprintf(file, "UNKNOWN %i\n", ev->type);
 
 	switch (ev->type) {
 		case EV_KEY:

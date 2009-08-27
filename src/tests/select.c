@@ -37,22 +37,20 @@
 #include "evfilter.h"
 #include "linux_input.h"
 
-static int event_read(struct evf_select_memb *self, struct evf_select_queue *queue)
+static int event_read(struct evf_select_memb *self)
 {
 	struct input_event ev;
 
 	if (read(self->fd, &ev, sizeof(struct input_event)) < 0) {
 		printf("Removing fd %i from queue.\n", self->fd);
-		close(self->fd);
-		evf_select_rem(queue, self->fd);
-		return 0;
+		return EVF_SEL_REM | EVF_SEL_CLOSE;
 	}
 
 	printf("Event from fd %i:\n", self->fd);
 	evf_input_print(stdout, " *** ", &ev);
 	printf("\n");
 
-	return 0;
+	return EVF_SEL_OK;
 }
 
 int main(int argc, char *argv[])

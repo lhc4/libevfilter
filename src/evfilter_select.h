@@ -32,6 +32,18 @@
 
 #include <sys/select.h>
 
+/*
+ * Returns values for read() callback from evf_select_memb.
+ *
+ * Use as bitfields, to remove member from queue and close fd:
+ *
+ * return EVF_SEL_REM | EVF_SEL_CLOSE;
+ */
+#define EVF_SEL_OK    0x00 /* read was succesfull, continue */
+#define EVF_SEL_REM   0x01 /* remove memb from select queue */
+#define EVF_SEL_CLOSE 0x02 /* close fd                      */
+#define EVF_SEL_DFREE 0x04 /* call free on void *data       */
+
 struct evf_select_queue;
 
 /*
@@ -44,7 +56,7 @@ struct evf_select_queue;
  */
 struct evf_select_memb {
 	int fd;
-	int (*read)(struct evf_select_memb *self, struct evf_select_queue *queue);
+	int (*read)(struct evf_select_memb *self);
 	void *data;
 	
 	struct evf_select_memb *next;
@@ -82,7 +94,7 @@ int evf_select(struct evf_select_queue *queue);
  *
  * Returns 
  */
-int evf_select_add(struct evf_select_queue *queue, int fd, int (*read)(struct evf_select_memb *self, struct evf_select_queue *queue), void *data);
+int evf_select_add(struct evf_select_queue *queue, int fd, int (*read)(struct evf_select_memb *self), void *data);
 
 /*
  * Remove fd from queue, filedescriptor is not closed here!.

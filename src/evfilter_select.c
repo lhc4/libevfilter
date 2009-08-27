@@ -21,6 +21,9 @@
 
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include "evfilter_select.h"
 
 /*
@@ -67,7 +70,7 @@ static struct evf_select_memb *list_delete(struct evf_select_memb *root, int fd)
 		prev = here;
 		here = here->next;
 	}
-
+	
 	/* wasn't found */
 	if (here == NULL)
 		return root;
@@ -98,7 +101,7 @@ struct evf_select_queue *evf_select_new(void)
 
 int evf_select(struct evf_select_queue *queue)
 {
-	int ret;
+	int ret, ret_read;
 	struct evf_select_memb *here = queue->root;
 
 	/* empty queue */
@@ -114,16 +117,30 @@ int evf_select(struct evf_select_queue *queue)
 		
 		DEBUG_PRINT("Testing for data on fd %i.\n", here->fd);
 
-		if (FD_ISSET(here->fd, &queue->rfds))
-			here->read(here, queue);
-		else
+		if (FD_ISSET(here->fd, &queue->rfds)) {
+			
+			ret_read = here->read(here);
+
+			if (ret_read == EVF_SEL_OK)
+				continue;
+
+			if (ret_read & EVF_SEL_CLOSE)
+				close(here->fd);
+
+			if (ret_read & EVF_SEL_DFREE)
+				free(here->data);
+
+			if (ret_read & EVF_SEL_REM)
+				queue->root = list_delete(queue->root, here->fd);
+
+		} else
 			FD_SET(here->fd, &queue->rfds);
 	}
 
 	return ret;
 }
 
-int evf_select_add(struct evf_select_queue *queue, int fd, int (*read)(struct evf_select_memb *self, struct evf_select_queue *queue), void *data)
+int evf_select_add(struct evf_select_queue *queue, int fd, int (*read)(struct evf_select_memb *self), void *data)
 {
 	struct evf_select_memb *memb = malloc(sizeof(struct evf_select_memb));
 
