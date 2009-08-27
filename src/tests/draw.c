@@ -65,7 +65,7 @@ struct pointer {
 	int color;
 };
 
-static int read_event(struct evf_select_memb *self, struct evf_select_queue *queue)
+static int read_event(struct evf_select_memb *self)
 {
 	struct input_event ev;
 	struct pointer *dev = self->data;
@@ -94,21 +94,19 @@ static int read_event(struct evf_select_memb *self, struct evf_select_queue *que
 		}
 	} else {
 		fprintf(stderr, "Device unplugged!\n");
-		free(dev);
-		close(self->fd);
-		evf_select_rem(queue, self->fd);
+		return EVF_SEL_REM | EVF_SEL_CLOSE |EVF_SEL_DFREE;
 	}
 
-	return 0;
+	return EVF_SEL_OK;
 }
 
 static struct evf_select_queue *queue;
 
-static int read_hotplug(struct evf_select_memb *self, struct evf_select_queue *queue)
+static int read_hotplug(struct evf_select_memb *self)
 {
 	evf_hotplug_rescan();
 	
-	return 0;
+	return EVF_SEL_OK;
 }
 
 static int text_y = 0;
@@ -149,7 +147,7 @@ static void device_plugged(const char *dev)
 	text_y+=10;
 }
 
-int main(int argc, char *argv[])
+int main(void)
 {
 	union evf_err err;
 	int fd;
