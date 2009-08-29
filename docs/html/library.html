@@ -162,6 +162,26 @@
  ...
 </pre>
 
+<h3>Profile api</h3>
+
+<pre>
+ <font color="green">struct</font> evf_filter *evf_load_system_profile(<font color="green">int</font> fd, <font color="green">union</font> evf_err *err);
+</pre>
+  <p>
+   Loads system profile and returns pointer to filter line. You should allways
+   check <i>evf_err</i> because <i>NULL</i> is correct return value.
+  </p>
+
+<pre>
+ <font color="green">struct</font> evf_filter *evf_load_system_profile(<font color="green">const char</font> *path, <font color="green">int</font> fd, <font color="green">union</font> evf_err *err);
+</pre>
+  <p>
+   Loads application defined profile and returns pointer to filter line. You
+   should allways check <i>evf_err</i> because <i>NULL</i> is correct return
+   value here. For detailed profile description refer to profile
+   <a href="profile.html">documentation</a>.
+  </p>
+
 <h3>Hotplug api</h3>
  <p>
   Functions that helps handle hotplug events. Current implementation uses
