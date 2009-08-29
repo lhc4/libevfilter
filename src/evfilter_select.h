@@ -75,19 +75,14 @@ struct evf_select_queue {
 struct evf_select_queue *evf_select_new(void);
 
 /*
- * Destroy
+ * Destroy, you can pass EVF_SEL_CLOSE and EVF_SEL_DFREE as a flag.
  */
-void evf_select_destroy(struct evf_select_queue *queue);
-
-/*
- * Returns true for empty queue.
- */
-int evf_select_empty(struct evf_select_queue *queue);
+void evf_select_destroy(struct evf_select_queue *queue, int flag);
 
 /*
  * Do a select() on file descriptors in queue.
  */
-int evf_select(struct evf_select_queue *queue);
+int evf_select(struct evf_select_queue *queue, struct timeval *timeout);
 
 /*
  * Insert fd, its read function and data into queue.

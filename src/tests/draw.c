@@ -65,6 +65,9 @@ struct pointer {
 	int color;
 };
 
+/*
+ * Here we parse event as it came 
+ */
 static int read_event(struct evf_select_memb *self)
 {
 	struct input_event ev;

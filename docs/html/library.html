@@ -22,7 +22,6 @@
  </div>
  
  <h2>Library api</h2>
- 
  <p>
   Evfilter library constists of many api levels. This page explains complete
   evfilter api although you may need only smal part of it. In this case scroll
@@ -30,8 +29,7 @@
  </p>
  
 
- <h3>Evfilter filter api</h3>
- 
+ <h3>Filter api</h3>
 <pre>
  <font color="green">struct</font> evf_filter *evf_filter_load(<font color="green">const char</font> *name, <font color="green">char</font> *params, <font color="green">union</font> evf_err *err); 
 </pre>
@@ -102,7 +100,7 @@
    Prints structure of linked list into stdout. Use for debugging only.
   </p>
 
- <h3>Linux input</h3>
+ <h3>Linux input api</h3>
  <p>
   Functions that can ease work with linux input interface. To be able to use
   them include <i>linux_input.h</i> as this header is not included in
@@ -164,6 +162,108 @@
  ...
 </pre>
 
+<h3>Hotplug api</h3>
+ <p>
+  Functions that helps handle hotplug events. Current implementation uses
+  inotify watching <i>/dev/input/</i>.
+ </p>
+
+<pre>
+ <font color="green">int</font> evf_hotplug_init(<font color="green">void</font> (*device_plugged)(<font color="green">const char</font> *dev), <font color="green">void</font> (*device_unplugged)(<font color="green">const char</font> *dev));
+</pre>
+  <p>
+   Initalize watch for <i>/dev/input/</i> and set two callbacks. Device
+   unplugged is more or less informational, because <i>/dev/input/eventX</i> are
+   dynamically allocated and moreover cannot be opened in time callback is
+   called. Retruns file descriptor on success and -1 on faillure. 
+  </p>
+
+<pre>
+ <font color="green">int</font> evf_hotplug_rescan(<font color="green">void</font>);
+</pre>
+  <p>
+   Read hotplug events from file descriptor, call this function after select
+   has returned data available on file descriptor returned by
+   <i>evf_hotplug_init()</i>.
+  </p>
+
+<pre>
+ <font color="green">void</font> evf_hotplug_rescan(<font color="green">void</font>);
+</pre>
+  <p>
+   Close file descriptor and do other cleanups.
+  </p>
+
+ <h3>Select queue api</h3>
+ <p>
+  Select queue is abstraction to traditionall <i>select()</i> call.
+ </p>
+  
+  <a name=select_flag><h4>Select flag</h4></a>
+   <p>
+    Following flags should be returned by read callback. There are defined as
+    bitfield so it's possible to return for example EVF_SEL_REM | EVF_SEL_CLOSE
+    which would remove descriptor from queue and close filedescriptor. 
+  </p>
+  <p>
+   Also EVF_SEL_CLOSE and EVF_SEL_DFREE could be also used as flag for
+   <i>evf_select_destroy()</i>. That would call <i>free()</i> respectively
+   <i>close()</i> on every member in queue. Don't forget that calling
+   <i>free()</i> on <i>NULL</i> pointer is correct.
+  </p>
+<pre>
+ EVF_SEL_OK    - read was succesful
+ EVF_SEL_REM   - remove member from queue
+ EVF_SEL_CLOSE - close file descriptor
+ EVF_SEL_DFREE - call free on void* data
+</pre>
+
+<pre>
+ <font color="green">struct</font> evf_select_queue *evf_select_new(<font color="green">void</font>);
+</pre>
+  <p>
+   Allocate and initalize new queue, returns pointer to newly allocated queue
+   or <i>NULL</i>.
+  </p>
+
+<pre>
+ <font color="green">void</font> evf_select_destroy(<font color="green">struct</font> evf_select_queue *queue, <font color="green">int</font> flag);
+</pre>
+  <p>
+   Destroy queue. Flag could be one of following <i>0</i> or EVF_SEL_DFREE
+   and/or EVF_SEL_CLOSE.
+  </p>
+
+<pre>
+ <font color="green">int</font> evf_select(<font color="green">struct</font> evf_select_queue *queue, <font color="green">struct</font> timeval *timeout);
+</pre>
+  <p>
+   Wait for data on any descriptor in select queue. When timeout is not needed
+   pass <i>NULL</i> as a second parameter.
+  </p>
+
+<pre>
+ <font color="green">int</font> evf_select_add(<font color="green">struct</font> evf_select_queue *queue, <font color="green">int</font> fd, <font color="green">int</font> (*read)(<font color="green">struct</font> evf_select_memb *self), <font color="green">void</font> *data);
+</pre>
+  <p>
+   Add file descriptor <i>fd</i> into select queue as well as read callback and
+   pointer to internal data. Read callback is called when data are ready on
+   file descriptor and should return <a href=#select_flag>select flag</a>.
+  </p>
+
+<pre>
+ <font color="green">int</font> evf_select_rem(<font color="green">struct</font> evf_select_queue *queue, <font color="green">int</font> fd);
+</pre>
+  <p>
+   Remove file descriptor from queue, beware that file descriptor is not closed either void* data is not freed.
+  </p>
+
+<pre>
+ <font color="green">unsigned int</font> evf_select_count(<font color="green">struct</font> evf_select_queue *queue);
+</pre>
+  <p>
+   Returns number of file descriptors in queue.
+  </p>
 
  <p>&nbsp;</p>
  <hr>

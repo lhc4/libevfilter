@@ -99,7 +99,25 @@ struct evf_select_queue *evf_select_new(void)
 	return queue;
 }
 
-int evf_select(struct evf_select_queue *queue)
+void evf_select_destroy(struct evf_select_queue *queue, int flag)
+{
+	struct evf_select_memb *here, *prev = NULL;
+
+	for (here = queue->root; here != NULL; prev = here, here = here->next) {
+		
+		if (flag & EVF_SEL_CLOSE)
+			close(here->fd);
+
+		if (flag & EVF_SEL_DFREE)
+			free(here->data);
+	
+		free(prev);
+	}
+
+	free(queue);
+}
+
+int evf_select(struct evf_select_queue *queue, struct timeval *timeout)
 {
 	int ret, ret_read;
 	struct evf_select_memb *here = queue->root;
@@ -110,7 +128,7 @@ int evf_select(struct evf_select_queue *queue)
 		return 0;
 	}
 
-	if ((ret = select(queue->root->fd + 1, &queue->rfds, NULL, NULL, NULL)) < 0)
+	if ((ret = select(queue->root->fd + 1, &queue->rfds, NULL, NULL, timeout)) < 0)
 		return ret;
 
 	for (here = queue->root; here != NULL; here = here->next) {
