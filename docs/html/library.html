@@ -24,8 +24,8 @@
  
  <h2>Library api</h2>
  <p>
-  Evfilter library constists of many api levels. This page explains complete
-  evfilter api although you may need only smal part of it. In this case scroll
+  Evfilter library consists of many api levels. This page explains complete
+  evfilter api although you may need only small part of it. In this case scroll
   down to see only the high level inteface.
  </p>
  
@@ -46,11 +46,12 @@
 <pre>
  <font color="green">void</font> *evf_filter_free(<font color="green">struct</font> evf_filter *filter);
 </pre>
-
+  
   <p>
-   Destroy filter, as filter could have additional cleanup function it's not safe
-   to call just <i>free(filter)</i> however it may work in most of the cases.
-   The pointer returned by this function is used for internal purposes.
+   Destroy filter, as filter could have additional cleanup function it's not
+   safe to call just <i>free(filter)</i>; even if it may work it's bad practice
+   and may lead to memory leaks.  The pointer returned by this function is used
+   for internal purposes.
   </p>
 
 <pre>
@@ -90,7 +91,7 @@
 </pre>
 
   <p>
-   Merge two linked list by appending second list after the first one.
+   Merge two linked lists by appending second list after the first one.
   </p>
 
 <pre>
@@ -109,10 +110,10 @@
  </p>
 
 <pre>
- <font color="green">int</font> evf_input_get_version(<font color="green">int</font> fd, <font color="green">int</font> version);
+ <font color="green">int</font> evf_input_get_version(<font color="green">int</font> fd, <font color="green">int</font> *version);
 </pre>
  <p>
- Wrapper to ioctl, returns <i>0</i> on succes. Example to print actual version: <br><i>printf("%d %d %d", version>>16, version>>8 & 0xff, version & 0xff);</i>
+ Wrapper to ioctl, returns <i>0</i> on success. Example to print actual version: <br><i>printf("%d %d %d", version>>16, version>>8 & 0xff, version & 0xff);</i>
  
  </p>
 
@@ -121,7 +122,7 @@
 </pre>
   <p>
    Wrapper to ioctl, returns <i>0</i> on success and copy up to buf_len
-   characters of device name to buf. The string is allways null terminated.
+   characters of device name to buf. The string is always null terminated.
   </p>
 
 <pre>
@@ -129,14 +130,14 @@
 </pre>
   <p>
    Wrapper to ioctl, returns <i>0</i> on success and copy up to buf_len
-   characters of device phys path to buf. The string is allways null terminated.
+   characters of device phys path to buf. The string is always null terminated.
   </p>
 
 <pre>
  <font color="green">int</font> evf_input_compare(<font color="green">int</font> fd, <font color="green">const char</font> *path);
 </pre>
   <p>
-   Compares minor and major number for file descriptor and file pointed by
+   Compares minor and major number for file descriptor and file pointed to by
    path. Returns <i>-1</i> on error, <i>0</i> for different devices, <i>1</i>
    for both pointing to the same device.
   </p>
@@ -145,16 +146,15 @@
  <font color="green">int</font> evf_input_print(<font color="green">FILE</font> *file, <font color="green">const char</font> *prefix, <font color="green">struct</font> input_event *ev);
 </pre>
   <p>
-   Prints event in human-readable format to the file and all the lines will be
-   prefixed with prefix. Example with prefix <i>" *** "</i> for some types of
-   events follows.
+   Prints event in human-readable format to the file, prefixing every line with
+   specified string. Example of output (<i>" *** "</i> are prefix):
   </p>
 <pre>
  *** ev->type:  EV_REL    
  *** ev->code:  REL_Y      (1)
  *** ev->value: 1
 
- *** ev->type: EV_SYN
+ *** ev->type:  EV_SYN
 
  *** ev->type:  EV_KEY    
  *** ev->code:  Key_LeftCtrl (29)
@@ -169,7 +169,7 @@
  <font color="green">struct</font> evf_filter *evf_load_system_profile(<font color="green">int</font> fd, <font color="green">union</font> evf_err *err);
 </pre>
   <p>
-   Loads system profile and returns pointer to filter line. You should allways
+   Loads system profile and returns pointer to filter line. You should always
    check <i>evf_err</i> because <i>NULL</i> is correct return value.
   </p>
 
@@ -178,14 +178,14 @@
 </pre>
   <p>
    Loads application defined profile and returns pointer to filter line. You
-   should allways check <i>evf_err</i> because <i>NULL</i> is correct return
+   should always check <i>evf_err</i> because <i>NULL</i> is correct return
    value here. For detailed profile description refer to profile
    <a href="profile.html">documentation</a>.
   </p>
 
 <h3>Hotplug api</h3>
  <p>
-  Functions that helps handle hotplug events. Current implementation uses
+  Functions for easier handling of hotplug events. Current implementation uses
   inotify watching <i>/dev/input/</i>.
  </p>
 
@@ -217,28 +217,27 @@
 
  <h3>Select queue api</h3>
  <p>
-  Select queue is abstraction to traditionall <i>select()</i> call.
+  Select queue is abstraction to traditional <i>select()</i> call.
  </p>
   
-  <a name=select_flag><h4>Select flag</h4></a>
-   <p>
-    Following flags should be returned by read callback. There are defined as
-    bitfield so it's possible to return for example EVF_SEL_REM | EVF_SEL_CLOSE
-    which would remove descriptor from queue and close filedescriptor. 
-  </p>
-  <p>
-   Also EVF_SEL_CLOSE and EVF_SEL_DFREE could be also used as flag for
-   <i>evf_select_destroy()</i>. That would call <i>free()</i> respectively
-   <i>close()</i> on every member in queue. Don't forget that calling
-   <i>free()</i> on <i>NULL</i> pointer is correct.
-  </p>
+  <a name=select_flag></a>
 <pre>
  EVF_SEL_OK    - read was succesful
  EVF_SEL_REM   - remove member from queue
  EVF_SEL_CLOSE - close file descriptor
  EVF_SEL_DFREE - call free on void* data
 </pre>
-
+  <p>
+    Following flags should be returned by read callback. There are defined as
+    bitfield so it's possible to return for example EVF_SEL_REM | EVF_SEL_CLOSE
+    which would remove descriptor from queue and close filedescriptor. 
+  </p>
+  <p>
+   EVF_SEL_CLOSE and EVF_SEL_DFREE could be also used as flag for
+   <i>evf_select_destroy()</i>. That would call <i>free()</i> or <i>close()</i>
+   on every member in queue. Don't forget that calling <i>free()</i> on
+   <i>NULL</i> pointer is correct.
+  </p>
 <pre>
  <font color="green">struct</font> evf_select_queue *evf_select_new(<font color="green">void</font>);
 </pre>
@@ -276,7 +275,8 @@
  <font color="green">int</font> evf_select_rem(<font color="green">struct</font> evf_select_queue *queue, <font color="green">int</font> fd);
 </pre>
   <p>
-   Remove file descriptor from queue, beware that file descriptor is not closed either void* data is not freed.
+   Remove file descriptor from queue, beware that file descriptor is not closed
+   automatically nor void* data are freed.
   </p>
 
 <pre>

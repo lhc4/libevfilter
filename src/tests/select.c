@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 	}
 
 	for (;;)
-		evf_select(queue);
+		evf_select(queue, NULL);
 
 	return 0;
 }
