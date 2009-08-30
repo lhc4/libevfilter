@@ -194,18 +194,20 @@
 </pre>
   <p>
    Initalize watch for <i>/dev/input/</i> and set two callbacks. Device
-   unplugged is more or less informational, because <i>/dev/input/eventX</i> are
-   dynamically allocated and moreover cannot be opened in time callback is
-   called. Retruns file descriptor on success and -1 on faillure. 
+   unplugged is more or less informational, because <i>/dev/input/eventX</i>
+   are dynamically allocated and moreover cannot be opened at the time callback
+   is called. Retruns file descriptor for use with <i>select()</i> or -1 on
+   faillure. 
   </p>
 
 <pre>
  <font color="green">int</font> evf_hotplug_rescan(<font color="green">void</font>);
 </pre>
   <p>
-   Read hotplug events from file descriptor, call this function after select
-   has returned data available on file descriptor returned by
-   <i>evf_hotplug_init()</i>.
+   Read hotplug events from file descriptor, call this function after
+   <i>select()</i> has returned data available on file descriptor returned by
+   <i>evf_hotplug_init()</i>. On success number of hotplug events is returned
+   otherwise <i>-1</i> is returned.
   </p>
 
 <pre>
@@ -228,7 +230,7 @@
  EVF_SEL_DFREE - call free on void* data
 </pre>
   <p>
-    Following flags should be returned by read callback. There are defined as
+    These flags should be returned by read callback. There are defined as
     bitfield so it's possible to return for example EVF_SEL_REM | EVF_SEL_CLOSE
     which would remove descriptor from queue and close filedescriptor. 
   </p>

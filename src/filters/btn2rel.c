@@ -123,7 +123,7 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 
 			ev->type  = EV_REL;
 			ev->code  = REL_X;
-			ev->value = 2;
+			ev->value = -2;
 		}
 
 		if (ev->code == data->key_right) {
@@ -136,7 +136,7 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 
 			ev->type  = EV_REL;
 			ev->code  = REL_X;
-			ev->value = -2;
+			ev->value = 2;
 		}
 
 		if (ev->code == data->left_btn)

@@ -13,3 +13,7 @@ all:
 #
 clean:
 	make -C src clean
+
+tar:
+	make clean
+	cd .. && tar czf libevfilter.tgz libevfilter/

@@ -1,3 +1,4 @@
+
 /******************************************************************************
  * This file is part of evfilter library.                                     *
  *                                                                            *
@@ -19,31 +20,16 @@
  *                                                                            *
  ******************************************************************************/
 
-/*
+#ifndef __SDL_UTILS_H__
+#define __SDL_UTILS_H__
 
-  Here is implemented hotplug support for evfilter library.
+#include <stdint.h>
+#include <SDL.h>
 
-  Currently the implementation uses inofity framework.
+struct sdl_scroll_buf;
 
- */
+struct sdl_scroll_buf *sdl_scroll_buf_new(SDL_Surface *dest, const char *title, Sint16 x, Sint16 y, Uint16 w, Uint16 h);
+void   sdl_scroll_buf_add(struct sdl_scroll_buf *sb, const char *mesg, Uint32 color);
 
-#ifndef __EVFILTER_HOTPLUG_H__
-#define __EVFILTER_HOTPLUG_H__
 
-/*
- * Register callback function and reset list of known devices. 
- */
-int evf_hotplug_init(void (*device_plugged)(const char *dev), void (*device_unplugged)(const char *dev));
-
-/*
- * Parse /proc/bus/input/devices and call callbacks. Returns
- * number of hotplug events. Can return -1 if parsing has failed. 
- */
-int evf_hotplug_rescan(void);
-
-/*
- * Exit the hotplug.
- */
-void evf_hotplug_exit(void);
-
-#endif /* __EVFILTER_HOTPLUG_H__ */
+#endif /* __SDL_UTILS_H__ */

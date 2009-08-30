@@ -80,6 +80,9 @@ int evf_input_compare(int fd, const char *path)
 	return st1.st_rdev == st2.st_rdev;
 }
 
+static char *ev_key[3] = {"KEY_UP", "KEY_DOWN", "KEY_REPEAT" };
+static const int ev_key_cnt = 3;
+
 /*
  * Pretty print for struct input_event.
  */
@@ -102,13 +105,15 @@ static void print_key(FILE *file, const char *prefix, struct input_event *ev)
 	}
 }
 
-static char *rel_ev[10] = {"REL_X     ", "REL_Y     ", "REL_Z     ", "REL_RX    ", "REL_RY    ", 
-                           "REL_RZ    ", "REL_HWHEEL", "REL_DIAL  ", "REL_WHEEL ", "REL_MISC  ", };
+static char *ev_rel[10] = { "REL_X",      "REL_Y",      "REL_Z",    "REL_RX",   "REL_RY", 
+                           "REL_RZ", "REL_HWHEEL",   "REL_DIAL", "REL_WHEEL", "REL_MISC", };
+
+static const int ev_rel_cnt = 10;
 
 static void print_rel(FILE *file, const char *prefix, struct input_event *ev)
 {
 	if (ev->code < 11)
-		fprintf(file, "%sev->code:  %s (%i)\n", prefix, rel_ev[ev->code], ev->code);
+		fprintf(file, "%sev->code:  %s (%i)\n", prefix, ev_rel[ev->code], ev->code);
 	else
 		fprintf(file, "%sev->code:  UNKNOWN (%i)\n", prefix, ev->code);
 	
@@ -124,8 +129,8 @@ static void print_abs(FILE* file, const char *prefix, struct input_event *ev)
 }
 
 
-static char *ev_type[] = { "EV_SYN    ", "EV_KEY    ", "EV_REL    ", "EV_ABS    ", "EV_MSC    ", "EV_SW     ", 
-                           "EV_LED    ", "EV_SND    ", "EV_REP    ", "EV_FF     ", "EV_PWR    ", "EV_FF_STAT", };
+static char *ev_type[] = { "EV_SYN", "EV_KEY", "EV_REL", "EV_ABS", "EV_MSC", "EV_SW", 
+                           "EV_LED", "EV_SND", "EV_REP",  "EV_FF", "EV_PWR", "EV_FF_STAT", };
 
 void evf_input_print(FILE *file, const char *prefix, struct input_event *ev)
 {
@@ -147,4 +152,49 @@ void evf_input_print(FILE *file, const char *prefix, struct input_event *ev)
 			print_abs(file, prefix, ev);
 		break;
 	}
+}
+
+static const char *ev_unknown = "UNKNOWN";
+
+const char *evf_input_type(struct input_event *ev)
+{
+	if (ev->type < 13)
+		return ev_type[ev->type];
+	
+	return ev_unknown;
+}
+
+const char *evf_input_code(struct input_event *ev)
+{
+	switch (ev->type) {
+		case EV_SYN:
+			return "0";
+		break;
+		case EV_KEY:
+			return keyparser_getname(ev->code);
+		break;
+		case EV_REL:
+			if (ev->code < ev_rel_cnt)
+				return ev_rel[ev->code];
+		break;
+	}
+
+	return ev_unknown;
+}
+
+const char *evf_input_value(struct input_event *ev)
+{
+	switch (ev->type) {
+		case EV_KEY:
+			if (ev->value < ev_key_cnt)
+				return ev_key[ev->value];
+			else
+				return ev_unknown;
+		break;
+		case EV_SYN:
+			return "0";
+		break;
+	}
+
+	return NULL;
 }

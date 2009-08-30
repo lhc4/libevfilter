@@ -98,30 +98,37 @@ int evf_hotplug_init(void (*device_plugged)(const char *dev), void (*device_unpl
 int evf_hotplug_rescan(void)
 {
 	char buf[EVF_BUF_LEN], str[EVF_BUF_LEN];
-	int len, i;
+	int len, i, nr = 0;
 	struct inotify_event *ev;
 
 	len = read(select_fd, buf, EVF_BUF_LEN);
 
+	if (len < 0)
+		return -1;
+
 	for (i = 0; i < len;) {
+
 		ev = (struct inotify_event*) &buf[i];
-		
 		
 		if (ev->len && !strncmp(ev->name, "event", 5)) {
 			
 			snprintf(str, EVF_BUF_LEN, "%s%s", EVF_DEV_PATH, ev->name);
 			
-			if (dev_plug && ev->mask & IN_CREATE)
+			if (dev_plug && ev->mask & IN_CREATE) {
 				dev_plug(str);
+				nr++;
+			}
 			
-			if (dev_unplug && ev->mask & IN_DELETE)
+			if (dev_unplug && ev->mask & IN_DELETE) {
 				dev_unplug(str);
+				nr++;
+			}
 		}
 		
 		i += ev->len + sizeof(struct inotify_event);
 	}
 
-	return 0;
+	return nr;
 }
 
 void efv_hotplug_exit(void)

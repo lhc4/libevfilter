@@ -60,4 +60,19 @@ int evf_input_compare(int fd, const char *path);
  */
 void evf_input_print(FILE *file, const char *prefix, struct input_event *ev);
 
+/*
+ * Event type to string.
+ */
+const char *evf_input_type(struct input_event *ev);
+
+/*
+ * Event code to string.
+ */
+const char *evf_input_code(struct input_event *ev);
+
+/*
+ * Event value to string.
+ */
+const char *evf_input_value(struct input_event *ev);
+
 #endif /* __LINUX_INPUT_H__ */
