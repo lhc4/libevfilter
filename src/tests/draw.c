@@ -80,7 +80,9 @@ static int read_event(struct evf_select_memb *self)
 	return EVF_SEL_OK;
 }
 
-
+/*
+ * Put event into scroll box
+ */
 static void print_event(struct input_event *ev, uint32_t color)
 {
 	const char *type, *code, *value;
@@ -106,17 +108,17 @@ static void commit(struct input_event *ev, void *data)
 		case EV_REL:
 			switch (ev->code) {
 				case REL_X:
-					dev->old_x = dev->x;
 					dev->x += ev->value;
 				break;
 				case REL_Y:
-					dev->old_y = dev->y;
 					dev->y += ev->value;
 				break;
 			}
 		break;
 		case EV_SYN:
 			lineColor(scr, dev->x, dev->y, dev->old_x, dev->old_y, dev->color);
+			dev->old_x = dev->x;
+			dev->old_y = dev->y;
 		break;
 	}
 
@@ -192,7 +194,7 @@ int main(void)
 		return 1;
 	}
 	
-	events_sb  = sdl_scroll_buf_new(scr, "Events", 10, 10, 300, Y_RES - 20);
+	events_sb  = sdl_scroll_buf_new(scr, "Events", 10, 10, 300, 250);
 	hotplug_sb = sdl_scroll_buf_new(scr, "Hotplug", X_RES - 310, 10, 300, 400);
 	
 	queue = evf_select_new();

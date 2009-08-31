@@ -147,6 +147,8 @@ int evf_select(struct evf_select_queue *queue, struct timeval *timeout)
 
 			if (ret_read & EVF_SEL_DFREE)
 				free(here->data);
+			
+			FD_CLR(here->fd, &queue->rfds);
 
 			if (ret_read & EVF_SEL_REM)
 				queue->root = list_delete(queue->root, here->fd);
