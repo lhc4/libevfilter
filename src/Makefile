@@ -28,6 +28,17 @@ libevfilter.so: make_filters make_keyparser $(OBJECTS) $(HEADERS) $(KEYPARSER_HE
 .c.o:
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# install
+INSTALL_HEADERS=evfilter.h evfilter_err.h evfilter_filter.h evfilter_hotplug.h        \
+                evfilter_line.h evfilter_loader.h evfilter_param.h evfilter_profile.h \
+                evfilter_select.h evfilter_struct.h linux_input.h
+
+install: libevfilter.so
+	install libevfilter.so /usr/lib/
+	ln -s /usr/lib/libevfilter.so /usr/lib/libevfilter.so.0
+	install -d /usr/include/evfilter/
+	install $(INSTALL_HEADERS) /usr/include/evfilter/ 
+
 # clean!
 clean:
 	rm -rf $(OBJECTS) libevfilter.so
