@@ -227,7 +227,7 @@
  EVF_SEL_OK    - read was succesful
  EVF_SEL_REM   - remove member from queue
  EVF_SEL_CLOSE - close file descriptor
- EVF_SEL_DFREE - call free on void* data
+ EVF_SEL_DFREE - call free on void* priv
 </pre>
   <p>
     These flags should be returned by read callback. There are defined as
@@ -265,12 +265,13 @@
   </p>
 
 <pre>
- <font color="green">int</font> evf_select_add(<font color="green">struct</font> evf_select_queue *queue, <font color="green">int</font> fd, <font color="green">int</font> (*read)(<font color="green">struct</font> evf_select_memb *self), <font color="green">void</font> *data);
+ <font color="green">int</font> evf_select_add(<font color="green">struct</font> evf_select_queue *queue, <font color="green">int</font> fd, <font color="green">int</font> (*read)(<font color="green">struct</font> evf_select_memb *self), <font color="green">void</font> *priv);
 </pre>
   <p>
    Add file descriptor <i>fd</i> into select queue as well as read callback and
-   pointer to internal data. Read callback is called when data are ready on
-   file descriptor and should return <a href=#select_flag>select flag</a>.
+   priv pointer to your data strucures. Read callback is called when data are
+   ready on file descriptor and should return <a href=#select_flag>select
+   flag</a>.
   </p>
 
 <pre>
@@ -278,7 +279,7 @@
 </pre>
   <p>
    Remove file descriptor from queue, beware that file descriptor is not closed
-   automatically nor void* data are freed.
+   automatically nor free() on void* priv is called.
   </p>
 
 <pre>

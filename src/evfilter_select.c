@@ -109,7 +109,7 @@ void evf_select_destroy(struct evf_select_queue *queue, int flag)
 			close(here->fd);
 
 		if (flag & EVF_SEL_DFREE)
-			free(here->data);
+			free(here->priv);
 	
 		free(prev);
 	}
@@ -146,7 +146,7 @@ int evf_select(struct evf_select_queue *queue, struct timeval *timeout)
 				close(here->fd);
 
 			if (ret_read & EVF_SEL_DFREE)
-				free(here->data);
+				free(here->priv);
 			
 			FD_CLR(here->fd, &queue->rfds);
 
@@ -160,7 +160,7 @@ int evf_select(struct evf_select_queue *queue, struct timeval *timeout)
 	return ret;
 }
 
-int evf_select_add(struct evf_select_queue *queue, int fd, int (*read)(struct evf_select_memb *self), void *data)
+int evf_select_add(struct evf_select_queue *queue, int fd, int (*read)(struct evf_select_memb *self), void *priv)
 {
 	struct evf_select_memb *memb = malloc(sizeof(struct evf_select_memb));
 
@@ -171,7 +171,7 @@ int evf_select_add(struct evf_select_queue *queue, int fd, int (*read)(struct ev
 
 	memb->fd   = fd;
 	memb->read = read;
-	memb->data = data;
+	memb->priv = priv;
 
 	FD_SET(fd, &queue->rfds);
 

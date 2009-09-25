@@ -35,7 +35,9 @@ INSTALL_HEADERS=evfilter.h evfilter_err.h evfilter_filter.h evfilter_hotplug.h  
 
 install: libevfilter.so
 	install libevfilter.so /usr/lib/
-	ln -s /usr/lib/libevfilter.so /usr/lib/libevfilter.so.0
+	if ! [ -e /usr/lib/libevfilter.so.0 ]; then \
+	ln -s /usr/lib/libevfilter.so /usr/lib/libevfilter.so.0; \
+	fi
 	install -d /usr/include/evfilter/
 	install $(INSTALL_HEADERS) /usr/include/evfilter/ 
 

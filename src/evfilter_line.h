@@ -62,7 +62,7 @@ int evf_line_process(struct evf_line *line);
  * barrier filter, if variable use_barriers is non zero, filter barriers with
  * history = use_barriers is attached before commit filter.
  */
-struct evf_line *evf_line_create(const char *input_device, void (*commit)(struct input_event *ev, void *data), void *data, unsigned int use_barriers, union evf_err *err);
+struct evf_line *evf_line_create(const char *input_device, void (*commit)(struct input_event *ev, void *priv), void *priv, unsigned int use_barriers, union evf_err *err);
 
 /*
  * Attach filter at the end of the line, but before commit and barrier.
@@ -87,5 +87,9 @@ void *evf_line_free(struct evf_line *line);
  */
 void evf_line_print(struct evf_line *line);
 
+/*
+ * Returns file descriptor for line.
+ */
+int evf_line_fd(struct evf_line *line);
 
 #endif /* __EVFILTER_LINE_H__ */

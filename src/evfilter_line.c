@@ -87,7 +87,7 @@ static int open_input_device(const char *input_device, union evf_err *err)
 /*
  * Create input line
  */
-struct evf_line *evf_line_create(const char *input_device, void (*commit)(struct input_event *ev, void *data), void *data, unsigned int use_barriers, union evf_err *err)
+struct evf_line *evf_line_create(const char *input_device, void (*commit)(struct input_event *ev, void *priv), void *priv, unsigned int use_barriers, union evf_err *err)
 {
 	struct evf_line   *line;
 	struct evf_filter *fcommit;
@@ -120,7 +120,7 @@ struct evf_line *evf_line_create(const char *input_device, void (*commit)(struct
 		return NULL;
 	}
 
-	fcommit = evf_commit_alloc(commit, data);
+	fcommit = evf_commit_alloc(commit, priv);
 
 	if (use_barriers)
 		fbarrier = evf_barrier_alloc(use_barriers);
@@ -185,13 +185,18 @@ void evf_line_process_event(struct evf_filter *root, struct input_event *ev)
  */
 void *evf_line_free(struct evf_line *line)
 {
-	void *data;
+	void *priv;
 
-	data = evf_filters_free(line->begin);
+	priv = evf_filters_free(line->begin);
 	close(line->fd);
 	free(line);
 
-	return data;
+	return priv;
+}
+
+int evf_line_get_fd(struct evf_line *line)
+{
+	return line->fd;
 }
 
 /*

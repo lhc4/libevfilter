@@ -42,7 +42,7 @@
 #define EVF_SEL_OK    0x00 /* read was succesfull, continue */
 #define EVF_SEL_REM   0x01 /* remove memb from select queue */
 #define EVF_SEL_CLOSE 0x02 /* close fd                      */
-#define EVF_SEL_DFREE 0x04 /* call free on void *data       */
+#define EVF_SEL_DFREE 0x04 /* call free on void *priv       */
 
 struct evf_select_queue;
 
@@ -57,7 +57,7 @@ struct evf_select_queue;
 struct evf_select_memb {
 	int fd;
 	int (*read)(struct evf_select_memb *self);
-	void *data;
+	void *priv;
 	
 	struct evf_select_memb *next;
 };
@@ -85,11 +85,11 @@ void evf_select_destroy(struct evf_select_queue *queue, int flag);
 int evf_select(struct evf_select_queue *queue, struct timeval *timeout);
 
 /*
- * Insert fd, its read function and data into queue.
+ * Insert fd, its read function and priv pointer into queue.
  *
  * Returns 
  */
-int evf_select_add(struct evf_select_queue *queue, int fd, int (*read)(struct evf_select_memb *self), void *data);
+int evf_select_add(struct evf_select_queue *queue, int fd, int (*read)(struct evf_select_memb *self), void *priv);
 
 /*
  * Remove fd from queue, filedescriptor is not closed here!.

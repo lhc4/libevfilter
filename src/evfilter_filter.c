@@ -115,7 +115,7 @@ struct evf_filter *evf_filter_load(const char *name, char *params, union evf_err
  */
 void *evf_filter_free(struct evf_filter *filter)
 {
-	void *data = NULL;
+	void *priv = NULL;
 
 	/* Not to segfault on NULL just like free() */
 	if (filter == NULL)
@@ -123,11 +123,11 @@ void *evf_filter_free(struct evf_filter *filter)
 
 	/* call filter cleanup if necessary */
 	if (filter->free != NULL)
-		data = filter->free(filter);
+		priv = filter->free(filter);
 	
 	free(filter);
 
-	return data;
+	return priv;
 }
 
 /*
@@ -136,15 +136,15 @@ void *evf_filter_free(struct evf_filter *filter)
 void *evf_filters_free(struct evf_filter *root)
 {
 	struct evf_filter *tmp = root, *del;
-	void  *data;
+	void  *priv;
 
 	while (tmp != NULL) {
 		del = tmp;
 		tmp = tmp->next;
-		data = evf_filter_free(del);
+		priv = evf_filter_free(del);
 	}
 
-	return data;
+	return priv;
 }
 
 /*
