@@ -194,7 +194,7 @@ void *evf_line_free(struct evf_line *line)
 	return priv;
 }
 
-int evf_line_get_fd(struct evf_line *line)
+int evf_line_fd(struct evf_line *line)
 {
 	return line->fd;
 }

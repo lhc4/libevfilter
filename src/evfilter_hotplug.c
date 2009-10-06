@@ -131,7 +131,7 @@ int evf_hotplug_rescan(void)
 	return nr;
 }
 
-void efv_hotplug_exit(void)
+void evf_hotplug_exit(void)
 {
 	close(select_fd);
 }
