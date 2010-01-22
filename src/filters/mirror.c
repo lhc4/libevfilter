@@ -89,7 +89,7 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 	self->next->modify(self->next, ev);
 }
 
-struct evf_filter *evf_mirror_alloc(int mir_abs_x, int mir_abs_y, int mir_rel_x, int mir_rel_y)
+struct evf_filter *evf_mirror_alloc(int mir_rel_x, int mir_rel_y, int mir_abs_x, int mir_abs_y)
 {
 	struct evf_filter *evf = malloc(sizeof (struct evf_filter) + sizeof (struct mirror));
 	struct mirror *tmp;
@@ -128,7 +128,7 @@ struct evf_filter *evf_mirror_creat(char *params, union evf_err *err)
 
 	if (evf_load_params(err, params, mirror_params, &mir_rel_x, &mir_rel_y, &mir_abs_x, &mir_abs_y) == -1)
 		return NULL;
-	
+
 	evf = evf_mirror_alloc(mir_rel_x, mir_rel_y, mir_abs_x, mir_abs_y);
 
 	if (evf == NULL) {

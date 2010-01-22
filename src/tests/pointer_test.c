@@ -37,15 +37,11 @@
 #include "evfilter.h"
 #include "linux_input.h"
 
-#include "sdl_utils.h"
-
 #define X_RES 480
 #define Y_RES 640
 
 static SDL_Surface *scr;
 static struct evf_select_queue *queue;
-static struct sdl_scroll_buf *events_sb;
-static struct sdl_scroll_buf *hotplug_sb;
 
 int init_sdl(void)
 {
@@ -74,31 +70,10 @@ static int read_event(struct evf_select_memb *self)
 	struct evf_line *line = self->priv;
 
 	if (evf_line_process(line) < 0) {
-		sdl_scroll_buf_add(hotplug_sb, "read failed; removing...", 0xaa2222ff);
 		return EVF_SEL_REM | EVF_SEL_DFREE;
 	}
 
 	return EVF_SEL_OK;
-}
-
-/*
- * Put event into scroll box
- */
-static void print_event(struct input_event *ev, uint32_t color)
-{
-	const char *type, *code, *value;
-	char buf[128];
-
-	type  = evf_input_type(ev);
-	code  = evf_input_code(ev);
-	value = evf_input_value(ev);
-
-	if (value != NULL)
-		snprintf(buf, 128, "T: %s C: %s V: %s", type, code, value);
-	else
-		snprintf(buf, 128, "T: %s C: %s V: %i", type, code, ev->value);
-
-	sdl_scroll_buf_add(events_sb, buf, color);
 }
 
 static void commit(struct input_event *ev, void *data)
@@ -127,13 +102,30 @@ static void commit(struct input_event *ev, void *data)
 			}
 		case EV_SYN:
 			lineColor(scr, dev->x, dev->y, dev->old_x, dev->old_y, dev->color);
+			int ux, lx, uy, ly;
+			
+			if (dev->x > dev->old_x) {
+				ux = dev->x;
+				lx = dev->old_x;
+			} else {
+				ux = dev->old_x;
+				lx = dev->x;
+			}
+			
+			if (dev->y > dev->old_y) {
+				uy = dev->y;
+				ly = dev->old_y;
+			} else {
+				uy = dev->old_y;
+				ly = dev->y;
+			}	
+
+			SDL_UpdateRect(scr, lx, ly, ux - lx + 1, uy - ly + 1);
 			dev->old_x = dev->x;
 			dev->old_y = dev->y;
 		break;
 	}
 
-	print_event(ev, dev->color);
-	SDL_UpdateRect(scr, 0, 0, X_RES, Y_RES);
 }
 
 
@@ -153,7 +145,6 @@ static void device_plugged(const char *dev)
 	char buf[128];
 
 	snprintf(buf, 128, "--> %s", dev);
-	sdl_scroll_buf_add(hotplug_sb, buf, color);
 	
 	ptr = malloc(sizeof(struct pointer));
 
@@ -177,9 +168,6 @@ static void device_plugged(const char *dev)
 		return;
 	}
 	
-	evf_input_get_name(line->fd, buf, 128);
-	sdl_scroll_buf_add(hotplug_sb, buf, color);
-
 	SDL_UpdateRect(scr, 0, 0, X_RES, Y_RES);
 	
 	evf_select_add(queue, line->fd, read_event, line);
@@ -192,7 +180,6 @@ static void device_unplugged(const char *dev)
 	char buf[128];
 
 	snprintf(buf, 128, "<-- %s", dev);
-	sdl_scroll_buf_add(hotplug_sb, buf, 0xaa2222ff);
 	SDL_UpdateRect(scr, 0, 0, X_RES, Y_RES);
 }
 
@@ -205,9 +192,6 @@ int main(void)
 		fprintf(stderr, "SDL init failed\n");
 		return 1;
 	}
-	
-	events_sb  = sdl_scroll_buf_new(scr, "Events", 10, 10, 300, 250);
-	hotplug_sb = sdl_scroll_buf_new(scr, "Hotplug", X_RES - 310, 10, 300, 400);
 	
 	queue = evf_select_new();
 

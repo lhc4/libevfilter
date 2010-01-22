@@ -58,14 +58,14 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 	if (ev->type == EV_ABS)
 		switch (ev->code) {
 			case ABS_X:
-				ev->value = (ev->value - scale->minx) * (INT_MAX / scale->maxx);
+				ev->value = 1.00 * INT_MAX * (ev->value - scale->minx) / scale->maxx;
 			break;
 			case ABS_Y:
-				ev->value = (ev->value - scale->miny) * (INT_MAX / scale->maxy);
+				ev->value = 1.00 * INT_MAX * (ev->value - scale->miny) / scale->maxy;
 			break;
 			case ABS_PRESSURE:
-				if (ev->value != 0)
-					ev->value = (ev->value - scale->minp) * (INT_MAX / scale->maxp);
+//				if (ev->value != 0)
+//					ev->value = (ev->value - scale->minp) * (INT_MAX / scale->maxp);
 			break;
 	}
 	

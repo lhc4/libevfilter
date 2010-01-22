@@ -105,14 +105,17 @@ static void print_key(FILE *file, const char *prefix, struct input_event *ev)
 	}
 }
 
-static char *ev_rel[10] = { "REL_X",      "REL_Y",      "REL_Z",    "REL_RX",   "REL_RY", 
-                           "REL_RZ", "REL_HWHEEL",   "REL_DIAL", "REL_WHEEL", "REL_MISC", };
+#define EV_REL_CNT 10
 
-static const int ev_rel_cnt = 10;
+static char *ev_rel[EV_REL_CNT] = { 
+"REL_X",      "REL_Y",      "REL_Z",    "REL_RX",   "REL_RY",
+"REL_RZ", "REL_HWHEEL",   "REL_DIAL", "REL_WHEEL", "REL_MISC",
+};
+
 
 static void print_rel(FILE *file, const char *prefix, struct input_event *ev)
 {
-	if (ev->code < 11)
+	if (ev->code < EV_REL_CNT)
 		fprintf(file, "%sev->code:  %s (%i)\n", prefix, ev_rel[ev->code], ev->code);
 	else
 		fprintf(file, "%sev->code:  UNKNOWN (%i)\n", prefix, ev->code);
@@ -120,12 +123,26 @@ static void print_rel(FILE *file, const char *prefix, struct input_event *ev)
 	fprintf(file, "%sev->value: %i\n", prefix, ev->value);
 }
 
+#define EV_ABS_CNT 42
+
+static char *ev_abs[EV_ABS_CNT] = {
+"ABS_X", "ABS_Y", "ABS_Z", "ABS_RX", "ABS_RY", "ABS_RZ", "ABS_THROTTLE",
+"ABS_RUDDER", "ABS_WHEEL", "ABS_GAS", "ABS_BRAKE", "UNKNOWN", "UNKNOWN",
+"UNKNOWN", "UNKNOWN", "UNKNOWN", "ABS_HAT0X", "ABS_HAT0Y", "ABS_HAT1X", 
+"ABS_HAT1Y", "ABS_HAT2X", "ABS_HAT2Y", "ABS_HAT3X", "ABS_HAT3Y", "ABS_PRESSURE", 
+"ABS_DISTANCE", "ABS_TILT_X", "ABS_TILT_Y", "ABS_TOOL_WIDTH", "UNKNOWN", 
+"UNKNOWN", "UNKNOWN", "ABS_VOLUME", "UNKNOWN", "UNKNOWN", "UNKNOWN", "UNKNOWN",
+"UNKNOWN", "UNKNOWN", "UNKNOWN", "UNKNOWN", "ABS_MISC"};
+
 static void print_abs(FILE* file, const char *prefix, struct input_event *ev)
 {
 	(void) ev;
 	(void) prefix;
 
-	fprintf(file, "TODO\n");
+	if (ev->code < EV_ABS_CNT)
+		fprintf(file, "%sev->code:  %s (%i)\n", prefix, ev_abs[ev->code], ev->code);
+	else
+		fprintf(file, "%sev->code:  UNKNOWN (%i)\n", prefix, ev->code);
 }
 
 
@@ -174,9 +191,12 @@ const char *evf_input_code(struct input_event *ev)
 			return keyparser_getname(ev->code);
 		break;
 		case EV_REL:
-			if (ev->code < ev_rel_cnt)
+			if (ev->code < EV_REL_CNT)
 				return ev_rel[ev->code];
 		break;
+		case EV_ABS:
+			if (ev->code < EV_ABS_CNT)
+				return ev_abs[ev->code];
 	}
 
 	return ev_unknown;

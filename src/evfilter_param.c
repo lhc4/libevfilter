@@ -50,6 +50,28 @@ const char *evf_get_type_name(enum evf_param_t type)
 	return evf_type_names[type];
 }
 
+static int evfilter_load_float(union evf_err *err, char *str, float *val, struct evf_param *param)
+{
+	float fval;
+	char *ptr;
+
+	fval = strtof(str, &ptr);
+
+	if (*ptr != '\0') {
+		err->type        = evf_errpar;
+		err->param.etype = evf_einval;
+		err->param.name  = param->name;	
+		err->param.value = str;
+		err->param.ptype = evf_float;
+
+		return -1;
+	}
+
+	*val = fval;
+
+	return 0;
+}
+
 /*
  * Converts string to integer and checks limits.
  */
@@ -420,9 +442,12 @@ int evf_load_params(union evf_err *err, char *cfg, struct evf_param params[], ..
 				*va_arg(list, char**) = values[i];
 			break;
 			case evf_bool:
-				if (evfilter_load_bool(err, values[i], va_arg(list, int*), &params[i])) {
+				if (evfilter_load_bool(err, values[i], va_arg(list, int*), &params[i]))
 					return -1;
-				}
+			break;
+			case evf_float:
+				if (evfilter_load_float(err, values[i], va_arg(list, float*), &params[i]))
+					return -1;
 			break;
 		}
 	}

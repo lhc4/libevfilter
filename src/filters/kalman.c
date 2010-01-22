@@ -58,9 +58,9 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 					kalman->x = ev->value;
 					kalman->reset_x = 0;
 				} else {
-					float est_x = kalman->x * kalman->vx;
+					float est_x = kalman->x + kalman->vx;
 					float new_x = est_x + kalman->kx * (ev->value - est_x);
-					kalman->vx = new_x - kalman->x;
+					kalman->vx  = kalman->vx/10 - 0.1 * (est_x - ev->value);
 					kalman->x = new_x;
 					ev->value = (int) new_x;
 				}
@@ -70,9 +70,9 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 					kalman->y = ev->value;
 					kalman->reset_y = 0;
 				} else {
-					float est_y = kalman->y * kalman->vy;
+					float est_y = kalman->y + kalman->vy;
 					float new_y = est_y + kalman->ky * (ev->value - est_y);
-					kalman->vy = new_y - kalman->y;
+					kalman->vy = kalman->vy/10 - 0.1 * (est_y - ev->value);
 					kalman->y = new_y;
 					ev->value = (int) new_y;
 				}
@@ -82,6 +82,8 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 				if (ev->value == 0) {
 					kalman->reset_x = 1;
 					kalman->reset_y = 1;
+					kalman->vx = 0;
+					kalman->vy = 0;
 				}
 			break;
 		}
@@ -119,17 +121,18 @@ static struct evf_param kalman_params[] = {
 	{ "kx", evf_float, NULL },
 	{ "ky", evf_float, NULL },
 	{ NULL,         0, NULL },
+	{ NULL,         0, NULL },
 };
 
 
 struct evf_filter *evf_kalman_creat(char *params, union evf_err *err)
 {
 	struct evf_filter *evf;
-	float kx, ky;
+	float kx, ky; 
 
 	if (evf_load_params(err, params, kalman_params, &kx, &ky) == -1)
 		return NULL;
-	
+
 	evf = evf_kalman_alloc(kx, ky);
 
 	if (evf == NULL) {
