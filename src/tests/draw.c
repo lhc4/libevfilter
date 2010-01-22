@@ -70,7 +70,7 @@ struct pointer {
  */
 static int read_event(struct evf_select_memb *self)
 {
-	struct evf_line *line = self->data;
+	struct evf_line *line = self->priv;
 
 	if (evf_line_process(line) < 0) {
 		sdl_scroll_buf_add(hotplug_sb, "read failed; removing...", 0xaa2222ff);
@@ -144,7 +144,7 @@ static void device_plugged(const char *dev)
 
 	snprintf(buf, 128, "--> %s", dev);
 	sdl_scroll_buf_add(hotplug_sb, buf, color);
-
+	
 	ptr = malloc(sizeof(struct pointer));
 
 	if (ptr == NULL) {
@@ -158,6 +158,7 @@ static void device_plugged(const char *dev)
 	ptr->old_y = Y_RES/2;
 	ptr->color = color;
 
+
 	line = evf_line_create(dev, commit, ptr, 10, &err);
 
 	if (err.type != evf_ok) {
@@ -168,6 +169,7 @@ static void device_plugged(const char *dev)
 	
 	evf_input_get_name(line->fd, buf, 128);
 	sdl_scroll_buf_add(hotplug_sb, buf, color);
+
 	SDL_UpdateRect(scr, 0, 0, X_RES, Y_RES);
 	
 	evf_select_add(queue, line->fd, read_event, line);

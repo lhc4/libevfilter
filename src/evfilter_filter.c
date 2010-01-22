@@ -43,6 +43,7 @@ static const char *evf_filters[] =
  "Rotate"            , 
  "Abs2Rel"           , 
  "Btn2Rel"           , 
+ "Kalman"            , 
  NULL                ,
 };
 
@@ -59,6 +60,7 @@ static struct evf_filter* (*evf_creat[])(char *, union evf_err *) =
  evf_rotate_creat              ,
  evf_abs2rel_creat             ,
  evf_btn2rel_creat             ,
+ evf_kalman_creat              ,
 };
 
 /*

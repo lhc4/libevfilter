@@ -21,11 +21,12 @@
 
 /*
  *
- * Evfilter weighted_average_abs:
+ * Evfilter kalman:
  *
- * Calculates weighted average of absolute X, Y and pressure.
+ * Uses kalman filter with gain kx and ky.
  *
- * samples = number of samples in history
+ * kx -- gain for x
+ * ky -- gain for y
  */
 
 #include <stdlib.h>
@@ -35,122 +36,101 @@
 #include "evfilter_struct.h"
 #include "evfilter_priv.h"
 
-#define sgn(x) ((x)>0?1:(-1))
+struct kalman {
+	float kx;
+	float ky;
 
-struct average {
-	int n;
-	int head[3];
-	int tail[3];
-	int coord[][3];
+	float x, vx;
+	float y, vy;
+
+	int reset_x;
+	int reset_y;
 };
-
-static int calculate(struct average *av, int c)
-{
-	float result = 0;
-	int n = 1;
-	int i;
-
-	for (i = av->head[c]; i != av->tail[c]; ++i, i %= av->n)
-		result = 1.00 / n++ * av->coord[i][c];
-	
-	return (int) result;
-}
-
-static void add(struct average *av, int c, int val)
-{
-	/* throw away sample on the tail */
-	if (abs(av->head[c] - av->tail[c]) >= av->n - 1) {
-		++av->tail[c];
-		av->tail[c] %= av->n;
-	}
-
-	/* move head */
-	++av->head[c];
-	av->head[c] %= av->n;
-	
-	/* save sample */
-	av->coord[av->head[c]][c] = val; 
-}
 
 static void modify(struct evf_filter *self, struct input_event *ev)
 {
-	struct average *average = (struct average*) self->data;
+	struct kalman *kalman = (struct kalman*) self->data;
 
-	if (ev->type == EV_ABS)
+	if (ev->type == EV_ABS) {
 		switch (ev->code) {
 			case ABS_X:
-				add(average, 0, ev->value);
-				ev->value = calculate(average, 0);
+				if (kalman->reset_x) {
+					kalman->x = ev->value;
+					kalman->reset_x = 0;
+				} else {
+					float est_x = kalman->x * kalman->vx;
+					float new_x = est_x + kalman->kx * (ev->value - est_x);
+					kalman->vx = new_x - kalman->x;
+					kalman->x = new_x;
+					ev->value = (int) new_x;
+				}
 			break;
 			case ABS_Y:
-				add(average, 1, ev->value);
-				ev->value = calculate(average, 1);
+				if (kalman->reset_y) {
+					kalman->y = ev->value;
+					kalman->reset_y = 0;
+				} else {
+					float est_y = kalman->y * kalman->vy;
+					float new_y = est_y + kalman->ky * (ev->value - est_y);
+					kalman->vy = new_y - kalman->y;
+					kalman->y = new_y;
+					ev->value = (int) new_y;
+				}
 			break;
 			case ABS_PRESSURE:
 				/* pen up */
 				if (ev->value == 0) {
-					average->head[0] = 0;
-					average->tail[0] = 0;
-					average->head[1] = 0;
-					average->tail[1] = 0;
-					average->head[2] = 0;
-					average->tail[2] = 0;
-				} else {
-					add(average, 2, ev->value);
-					ev->value = calculate(average, 2);
+					kalman->reset_x = 1;
+					kalman->reset_y = 1;
 				}
 			break;
+		}
 	}
-	
+
 	self->next->modify(self->next, ev);
 }
 
-struct evf_filter *evf_weighted_average_abs_alloc(unsigned int n)
+struct evf_filter *evf_kalman_alloc(float kx, float ky)
 {
-	struct evf_filter *evf = malloc(sizeof (struct evf_filter) + sizeof (struct average) + sizeof (int) * 3 * n);
-	struct average *tmp;
+	struct evf_filter *evf = malloc(sizeof (struct evf_filter) + sizeof (struct kalman));
+	struct kalman *kalman;
 
 	if (evf == NULL)
 		return NULL;
 
-	tmp = (struct average*) evf->data;
+	kalman = (struct kalman*) evf->data;
 
-	/* number of samples to store */
-	tmp->n = n;
-	
-	/* heads and tails for queunes */
-	tmp->head[0] = 0;
-	tmp->tail[0] = 0;
-	tmp->head[1] = 0;
-	tmp->head[1] = 0;
-	tmp->tail[2] = 0;
-	tmp->tail[2] = 0;
+	kalman->kx = kx;
+	kalman->ky = ky;
+	kalman->vx = 0;
+	kalman->vy = 0;
+	kalman->reset_x = 1;
+	kalman->reset_y = 1;
 
 	evf->modify = modify;
 	evf->free   = NULL;
-	evf->name   = "Weighted Average Abs";
-	evf->desc   = "Does exponential average of last n samples.";
+	evf->name   = "Kalman";
+	evf->desc   = "Kalman filter.";
 
 	return evf;
 }
 
-static struct evf_lim_int samples_lim = { 0, 10 };
-
-static struct evf_param average_params[] = {
-	{ "samples", evf_int, &samples_lim },
-	{ NULL,      0,       NULL         },
+static struct evf_param kalman_params[] = {
+	{ "kx", evf_float, NULL },
+	{ "ky", evf_float, NULL },
+	{ NULL,         0, NULL },
 };
 
 
-struct evf_filter *evf_weighted_average_abs_creat(char *params, union evf_err *err)
+struct evf_filter *evf_kalman_creat(char *params, union evf_err *err)
 {
-	int nr_samples;
 	struct evf_filter *evf;
+	float kx, ky;
 
-	if (evf_load_params(err, params, average_params, &nr_samples) == -1)
+	if (evf_load_params(err, params, kalman_params, &kx, &ky) == -1)
 		return NULL;
 	
-	evf = evf_weighted_average_abs_alloc((unsigned int)nr_samples);
+	evf = evf_kalman_alloc(kx, ky);
 
 	if (evf == NULL) {
 		err->type          = evf_errno;

@@ -39,7 +39,7 @@ install: libevfilter.so
 	ln -s /usr/lib/libevfilter.so /usr/lib/libevfilter.so.0; \
 	fi
 	install -d /usr/include/evfilter/
-	install $(INSTALL_HEADERS) /usr/include/evfilter/ 
+	install -m 644 $(INSTALL_HEADERS) /usr/include/evfilter/ 
 
 # clean!
 clean:
