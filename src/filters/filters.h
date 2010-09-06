@@ -31,7 +31,9 @@ union evf_err;
  * WARNING: correctness of passed arguments is not checked!
  *          Anyway you've been warned Muhehehe....
  */
-struct evf_filter *evf_commit_alloc(void (*commit)(struct input_event *ev, void *data), void *data);
+struct evf_filter *evf_commit_alloc(void (*commit)(struct input_event *ev,
+                                    void *data), void *data);
+
 struct evf_filter *evf_barrier_alloc(unsigned int history);
 
 /*
@@ -42,7 +44,8 @@ struct evf_filter* evf_no_repeat_creat(char *params, union evf_err *err);
 struct evf_filter* evf_pressure_to_key_creat(char *params, union evf_err *err);
 struct evf_filter* evf_speed_mod_rel_creat(char *params, union evf_err *err);
 struct evf_filter* evf_barrier_creat(char *params, union evf_err *err);
-struct evf_filter* evf_weighted_average_abs_creat(char *params, union evf_err *err);
+struct evf_filter* evf_weighted_average_abs_creat(char *params,
+                                                  union evf_err *err);
 struct evf_filter* evf_scale_abs_creat(char *params, union evf_err *err);
 struct evf_filter* evf_mirror_creat(char *params, union evf_err *err);
 struct evf_filter* evf_rotate_creat(char *params, union evf_err *err);

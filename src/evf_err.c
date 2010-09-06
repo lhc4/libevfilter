@@ -19,42 +19,63 @@
  *                                                                            *
  ******************************************************************************/
 
-/*
-  
-  Evfilter loader gives you simple api to load all filters from one
-  configuration file.
+#include <string.h>
+#include <stdio.h>
 
-  The file consist of several blocks like this:
+#include "evf_err.h"
+#include "evf_param.h"
 
-  Filter = FilterName
-	param1 = value
-	param2 = value
-  EndFilter
-
-  Every content between "Filter = FilterName" and "EndFilter" is simply passed
-  to evf_load_filter().
-
- */
-
-#ifndef __EVFILTER_LOADER_H__
-#define __EVFILTER_LOADER_H__
-
-#include "evfilter.h"
-#include "evfilter_err.h"
+//#define DPRINT(...) { fprintf(stderr, "%s: %i: ", __FILE__, __LINE__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n"); }
+#define DPRINT(...)
 
 /*
- * Create filter line from configuration file.
- *
- * On succesfull operation pointer to filter line is returned. NULL is valid
- * value for empty file, so don't forget to check err in this case unless you
- * say empty file is invalid configuration.
+ * Print error message according to union evf_err
+ * TODO: convert error message to string
  */
-struct evf_filter *evf_load_filters(const char *path, union evf_err *err);
+void evf_err_print(union evf_err *err)
+{
+	if (err->type == evf_ok) {
+		printf("Operation was succesfull.\n");
+		return;
+	}
 
-/*
- * Dtto, but compose path from path and filename.
- */
-struct evf_filter *evf_load_filters_compose(const char *path, const char *file, union evf_err *err);
+	if (err->type == evf_errno) {
+		printf("Errno: %s\n", strerror(err->err_no.err_no));
+		return;
+	}
 
+	if (err->type != evf_errpar) {
+		printf("Internal Error: Invalid error type (%i) !\n",
+		       err->type);
+		return;
+	}
 
-#endif /* __EVFILTER_LOADER_H__ */
+	switch (err->param.etype) {
+		case evf_emissing:
+			printf("Parameter `%s' is missing.\n", err->param.name);
+		break;
+		case evf_epname:
+			printf("Invalid parameter `%s'.\n", err->param.name);
+		break;
+		case evf_efname:
+			printf("Invalid filter name `%s'.\n", err->param.name);
+		break;
+		case evf_einval:
+			printf("Invalid value `%s' for parameter `%s'. "
+			       "Expected %s.\n",
+			       err->param.value, err->param.name, 
+			       evf_get_type_name(err->param.ptype));
+		break;
+		case evf_erange:
+			//TODO: print range
+			printf("Parameter `%s' out of range.\n",
+			       err->param.name);
+		break;
+		case evf_eredef:
+			printf("Parameter `%s' redefined.\n", err->param.name);
+		break;
+		default:
+			printf("Internal Error: Invalid error number (%i) !\n",
+			       err->param.ptype);
+	}
+}

@@ -25,10 +25,10 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "evfilter_struct.h"
-#include "evfilter_filter.h"
-#include "evfilter_err.h"
-#include "evfilter_loader.h"
+#include "evf_struct.h"
+#include "evf_filter.h"
+#include "evf_err.h"
+#include "evf_loader.h"
 
 /*
  * Just eat's all whitespaces.
@@ -148,7 +148,8 @@ struct evf_filter *evf_load_filters(const char *path, union evf_err *err)
 			return NULL;
 		}
 		
-		//printf("FilterName ***%s***\n Params ***%s***\n", filter, params);
+		//printf("FilterName ***%s***\n Params ***%s***\n",
+		//       filter, params);
 		
 		tmp = evf_filter_load(filter, params, err);
 		
@@ -184,7 +185,8 @@ struct evf_filter *evf_load_filters(const char *path, union evf_err *err)
 /*
  * Just wrapper for evf_load_filters.
  */
-struct evf_filter *evf_load_filters_compose(const char *path, const char *file, union evf_err *err)
+struct evf_filter *evf_load_filters_compose(const char *path, const char *file,
+                                            union evf_err *err)
 {
 	char *str_buf = malloc(strlen(path) + strlen(file) + 1);
 	struct evf_filter *tmp;

@@ -28,8 +28,8 @@
 
  */
 
-#ifndef __EVFILTER_LINE_H__
-#define __EVFILTER_LINE_H__
+#ifndef __EVF_LINE_H__
+#define __EVF_LINE_H__
 
 union evf_err;
 struct evf_filter;
@@ -53,7 +53,8 @@ struct evf_line {
  *
  * 0 is returned on succes.
  *
- * -1 on failure to read from fd (EAGAIN is not threated as error and 0 is reported).
+ * -1 on failure to read from fd (EAGAIN is not threated as error and 0 is
+ *  reported).
  */
 int evf_line_process(struct evf_line *line);
 
@@ -62,7 +63,11 @@ int evf_line_process(struct evf_line *line);
  * barrier filter, if variable use_barriers is non zero, filter barriers with
  * history = use_barriers is attached before commit filter.
  */
-struct evf_line *evf_line_create(const char *input_device, void (*commit)(struct input_event *ev, void *priv), void *priv, unsigned int use_barriers, union evf_err *err);
+struct evf_line *evf_line_create(const char *input_device,
+                                 void (*commit)(struct input_event *ev,
+				                void *priv),
+				 void *priv, unsigned int use_barriers,
+				 union evf_err *err);
 
 /*
  * Attach filter at the end of the line, but before commit and barrier.
@@ -77,13 +82,14 @@ void evf_line_attach_filter(struct evf_line *line, struct evf_filter *filter);
 void evf_line_process_event(struct evf_filter *root, struct input_event *ev);
 
 /*
- * Free all memory allocated in filter line. Also close file descriptor associated
- * with line. Returns pointer to void *data.
+ * Free all memory allocated in filter line. Also close file descriptor
+ * associated with line. Returns pointer to void *data.
  */
 void *evf_line_free(struct evf_line *line);
 
 /*
- * Print filter names from filter line to stdout, use for debugging purpuses only.
+ * Print filter names from filter line to stdout, use for debugging purpuses
+ * only.
  */
 void evf_line_print(struct evf_line *line);
 
@@ -92,4 +98,4 @@ void evf_line_print(struct evf_line *line);
  */
 int evf_line_fd(struct evf_line *line);
 
-#endif /* __EVFILTER_LINE_H__ */
+#endif /* __EVF_LINE_H__ */

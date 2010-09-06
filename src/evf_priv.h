@@ -19,72 +19,16 @@
  *                                                                            *
  ******************************************************************************/
 
-/*
- 
-  Here is defined basic error reporting functionality.
+#ifndef __EVF_PRIV_H__
+#define __EVF_PRIV_H__
 
- */
-
-#ifndef __EVFILTER_ERR_H__
-#define __EVFILTER_ERR_H__
-
-#include "evfilter_param.h"
+#include "evf_param.h"
+#include "evf_err.h"
 
 /*
- * Error types.
+ * Helper function that should be used internally
  */
-enum evf_err_t {
-	evf_ok,      /* all ok                                     */
-	evf_errno,   /* errno from linux call                      */
-	evf_errpar,  /* parse error, some parameters was incorrect */
-};
+int evf_load_params(union evf_err *err, char *cfg, struct evf_param params[],
+                    ...);
 
-/*
- * Parse error types.
- */
-enum evf_err_par_t {
-	evf_efname,       /* ivalid filter name; err and name is filled             */
-	evf_epname,       /* ivalid parameter name; err and name is filled          */
-	evf_emissing,     /* parameter missing; err and name is filled              */
-	evf_einval,       /* invalid value; value, name, err and type is filled     */
-	evf_erange,       /* value out of range; value, name, err and lim is filled */
-	evf_eredef,       /* value redefined; value, name and err is filled         */
-};
-
-/*
- * Errno from underlying linux call.
- *
- * Currently EMALLOC and errors from fopen()
- */
-struct evf_err_errno {
-	enum evf_err_t type;
-	int err_no;
-};
-
-/*
- * Contains errors caused parse configuration errors.
- */
-struct evf_err_param {
-	enum evf_err_t type;
-	enum evf_err_par_t etype;
-	enum evf_param_t ptype;
-	const char *name;
-	const char *value;
-	void *lim;
-};
-
-/*
- * This is the real err structure, use this one.
- */
-union evf_err {
-	enum evf_err_t type;
-	struct evf_err_errno err_no;
-	struct evf_err_param param;
-};
-
-/*
- * Prints error to stdout.
- */
-void evf_err_print(union evf_err *err);
-
-#endif /* __EVFILTER_ERR_H__ */
+#endif /* __EVF_PRIV_H__ */

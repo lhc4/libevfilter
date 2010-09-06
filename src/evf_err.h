@@ -20,30 +20,71 @@
  ******************************************************************************/
 
 /*
-
-  Here is implemented hotplug support for evfilter library.
-
-  Currently the implementation uses inofity framework.
+ 
+  Here is defined basic error reporting functionality.
 
  */
 
-#ifndef __EVFILTER_HOTPLUG_H__
-#define __EVFILTER_HOTPLUG_H__
+#ifndef __EVF_ERR_H__
+#define __EVF_ERR_H__
+
+#include "evf_param.h"
 
 /*
- * Register callback function and reset list of known devices. 
+ * Error types.
  */
-int evf_hotplug_init(void (*device_plugged)(const char *dev), void (*device_unplugged)(const char *dev));
+enum evf_err_t {
+	evf_ok,      /* all ok                                     */
+	evf_errno,   /* errno from linux call                      */
+	evf_errpar,  /* parse error, some parameters was incorrect */
+};
 
 /*
- * Parse /proc/bus/input/devices and call callbacks. Returns
- * number of hotplug events. Can return -1 if parsing has failed. 
+ * Parse error types.
  */
-int evf_hotplug_rescan(void);
+enum evf_err_par_t {
+	evf_efname,   /* ivalid filter name; fills: err and name             */
+	evf_epname,   /* ivalid parameter name; fills: err and name          */
+	evf_emissing, /* parameter missing; fills: err and name              */
+	evf_einval,   /* invalid value; fills: value, name, err and type     */
+	evf_erange,   /* value out of range; fills: value, name, err and lim */
+	evf_eredef,   /* value redefined; fills: value, name and err         */
+};
 
 /*
- * Exit the hotplug.
+ * Errno from underlying linux call.
+ *
+ * Currently EMALLOC and errors from fopen()
  */
-void evf_hotplug_exit(void);
+struct evf_err_errno {
+	enum evf_err_t type;
+	int err_no;
+};
 
-#endif /* __EVFILTER_HOTPLUG_H__ */
+/*
+ * Contains errors caused parse configuration errors.
+ */
+struct evf_err_param {
+	enum evf_err_t type;
+	enum evf_err_par_t etype;
+	enum evf_param_t ptype;
+	const char *name;
+	const char *value;
+	void *lim;
+};
+
+/*
+ * This is the real err structure, use this one.
+ */
+union evf_err {
+	enum evf_err_t type;
+	struct evf_err_errno err_no;
+	struct evf_err_param param;
+};
+
+/*
+ * Prints error to stdout.
+ */
+void evf_err_print(union evf_err *err);
+
+#endif /* __EVF_ERR_H__ */

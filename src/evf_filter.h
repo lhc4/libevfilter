@@ -29,8 +29,8 @@
 
  */
 
-#ifndef __EVFILTER_FILTER_H__
-#define __EVFILTER_FILTER_H__
+#ifndef __EVF_FILTER_H__
+#define __EVF_FILTER_H__
 
 struct input_event;
 struct evf_filter;
@@ -51,7 +51,8 @@ const char *evf_filter_get_desc(struct evf_filter *filter);
  *
  * NOTE: The string params is changed during parsing.
  */
-struct evf_filter *evf_filter_load(const char *name, char *params, union evf_err *err);
+struct evf_filter *evf_filter_load(const char *name, char *params,
+                                   union evf_err *err);
 
 /*
  * Free filter.
@@ -81,11 +82,12 @@ struct evf_filter *evf_filters_last(struct evf_filter *root);
  * Merges two linked lists of filters together. Second list is appended to the
  * end of first one. Returned value is begining of the new list.
  */
-struct evf_filter *evf_filters_merge(struct evf_filter *root, struct evf_filter *filters);
+struct evf_filter *evf_filters_merge(struct evf_filter *root,
+                                     struct evf_filter *filters);
 
 /*
  * Debug function, prints linked list of filters to stdout. 
  */
 void evf_filters_print(struct evf_filter *root);
 
-#endif /* __EVFILTER_FILTER_H__ */
+#endif /* __EVF_FILTER_H__ */

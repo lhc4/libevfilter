@@ -19,14 +19,47 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef __EVFILTER_PRIV_H__
-#define __EVFILTER_PRIV_H__
-
-#include "evfilter_err.h"
+#ifndef __EVF_PARAM_H__
+#define __EVF_PARAM_H__
 
 /*
- * Helper function that should be used internally
+ * Parameters filter configuration loaders
  */
-int evf_load_params(union evf_err *err, char *cfg, struct evf_param params[], ...);
+enum evf_param_t {
+	evf_key = 0, /* see keys.h             */
+	evf_keys,    /* field of keys          */
+	evf_int,     /* just number            */
+	evf_float,   /* float                  */
+	evf_str,     /* null terminated string */
+	evf_file,    /* struct FILE*           */
+	evf_bool,    /* bool stored in int     */
+};
 
-#endif /* __EVFILTER_PRIV_H__ */
+/*
+ * Structures used to define filter parameters.
+ */
+struct evf_param {
+	char *name;
+	enum evf_param_t type;
+	void *lim;
+};
+
+/*
+ * Limits
+ */
+struct evf_lim_int {
+	int min;
+	int max;
+};
+
+struct evf_lim_str {
+	int min_len;
+	int max_len;
+};
+
+/*
+ * Returns name for type.
+ */
+const char *evf_get_type_name(enum evf_param_t type);
+
+#endif /* __EVF_PARAM_H__ */

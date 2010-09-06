@@ -34,10 +34,8 @@
  */
 #include <linux/input.h>
 
-/* 
- * Error reporting, functions to translate error codes to error messages.
- */
-#include "evfilter_err.h"
+/*  Error reporting, functions to translate error codes to error messages. */
+#include "evf_err.h"
 
 /*
  * Basic filter interface. Can load filters, destroy them, get parameters.
@@ -45,31 +43,28 @@
  * NOTE: Most of the interface are low level calls, do not use unless you know
  *       what are you doing.
  */
-#include "evfilter_filter.h"
+#include "evf_filter.h"
 
-/*
- * Load filters accroding to file and returns handle to it.
- */
-#include "evfilter_loader.h"
+/* Load filters accroding to config file and returns handle to it. */
+#include "evf_loader.h"
 
 /*
  * Implements profiles. Profile is directory with special file that contains rules
  * and many more files with informations witch filters to load.
  */
-#include "evfilter_profile.h"
+#include "evf_profile.h"
 
 /*
- * Evfilter line. High level interface, you can call just create line and library looks
- * for system wide profiles, loads filter and many more. Use this interface.
+ * Evfilter line. High level interface, you can call just create line and
+ * library looks for system wide profiles, loads filter and many more. This is
+ * application preffered interface.
  */
-#include "evfilter_line.h"
+#include "evf_line.h"
 
-/* io queue for file descriptor build on select() call */
+/* IO queue for file descriptor build on select() call */
 #include "evf_io_queue.h"
 
-/*
- * Hotplug implementation.
- */
-#include "evfilter_hotplug.h"
+/* Hotplug implementation. */
+#include "evf_hotplug.h"
 
 #endif /* __EVFILTER_H__ */

@@ -3,9 +3,9 @@ CC=gcc
 CFLAGS=-fPIC -Wall -W -ggdb -DDEBUG -Ikeyparser
 
 # source files
-CSOURCES=evfilter_param.c evfilter_err.c evfilter_profile.c evfilter_filter.c\
-         evfilter_loader.c evfilter_line.c linux_input.c evf_io_queue.c   \
-	 evfilter_hotplug.c
+CSOURCES=evf_param.c evf_err.c evf_profile.c evf_filter.c\
+         evf_loader.c evf_line.c linux_input.c evf_io_queue.c   \
+	 evf_hotplug.c
 KEYPARSER_HEADERS=keyparser/key_parser.h keyparser/keys.h
 HEADERS=$(shell ls ./*.h)
 

@@ -26,7 +26,8 @@
 #include <string.h>
 #include <dirent.h>
 #include <sys/inotify.h>
-#include "evfilter_hotplug.h"
+
+#include "evf_hotplug.h"
 
 #define EVF_DEV_PATH "/dev/input/"
 #define EVF_BUF_LEN 1024
@@ -52,7 +53,8 @@ static int walk(void)
 	while ((dir_ent = readdir(dir)) != NULL) {
 		
 		if (!strncmp(dir_ent->d_name, "event", 5) && dev_plug) {
-			snprintf(buf, EVF_BUF_LEN, "%s%s", EVF_DEV_PATH, dir_ent->d_name);
+			snprintf(buf, EVF_BUF_LEN, "%s%s", EVF_DEV_PATH,
+			         dir_ent->d_name);
 			dev_plug(buf);
 		}
 	}
@@ -68,7 +70,8 @@ static int walk(void)
  * eventX file creation/deletion. To accomplish that we are using inotify
  * interface.
  */
-int evf_hotplug_init(void (*device_plugged)(const char *dev), void (*device_unplugged)(const char *dev))
+int evf_hotplug_init(void (*device_plugged)(const char *dev),
+                     void (*device_unplugged)(const char *dev))
 {
 	int fd, wd;
 	
@@ -83,7 +86,7 @@ int evf_hotplug_init(void (*device_plugged)(const char *dev), void (*device_unpl
 	if (fd < 0)
 		return -1;
 
-	wd = inotify_add_watch(fd, EVF_DEV_PATH, IN_CREATE | IN_DELETE);
+	wd = inotify_add_watch(fd, EVF_DEV_PATH, IN_CREATE | IN_DELETE);       
 
 	if (wd < 0) {
 		close(fd);
@@ -112,7 +115,8 @@ int evf_hotplug_rescan(void)
 		
 		if (ev->len && !strncmp(ev->name, "event", 5)) {
 			
-			snprintf(str, EVF_BUF_LEN, "%s%s", EVF_DEV_PATH, ev->name);
+			snprintf(str, EVF_BUF_LEN, "%s%s", EVF_DEV_PATH,
+			         ev->name);
 			
 			if (dev_plug && ev->mask & IN_CREATE) {
 				dev_plug(str);

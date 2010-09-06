@@ -19,47 +19,42 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef __EVFILTER_PARAM_H__
-#define __EVFILTER_PARAM_H__
+/*
+  
+  Here comes struct evfilter definition, do not inlucde this file into any
+  code outside of this library. To acces it's mebers use functions defined
+  in evfilter_filter.h.
+  
+ */
+
+#ifndef __EVF_STRUCT_H__
+#define __EVF_STRUCT_H__
+
+struct input_event;
 
 /*
- * Parameters filter configuration loaders
+ * Main evfilter filter structure.
  */
-enum evf_param_t {
-	evf_key = 0, /* see keys.h             */
-	evf_keys,    /* field of keys          */
-	evf_int,     /* just number            */
-	evf_float,   /* float                  */
-	evf_str,     /* null terminated string */
-	evf_file,    /* struct FILE*           */
-	evf_bool,    /* bool stored in int     */
-};
-
-/*
- * Structures used to define filter parameters.
- */
-struct evf_param {
+struct evf_filter {
+	/*
+	 * This function is invoked from previous filter and your filter
+	 * should invoke self->next->modify(self->next, ev) on any event
+	 * that was generated/passed trough your filter.
+	 */
+	void (*modify)(struct evf_filter *self, struct input_event *ev);
+	/* Either NULL, or additional free helper */
+	void *(*free)(struct evf_filter *self);
+	/* Filter name */
 	char *name;
-	enum evf_param_t type;
-	void *lim;
+	/* Filter description */
+	char *desc;
+	/* Next filter in filter line. */
+	struct evf_filter *next;
+	/* 
+	 * Iternal filter data, usually structure holding filter state. 
+	 * In case filter is not stateless.
+	 */
+	char data[0];
 };
 
-/*
- * Limits
- */
-struct evf_lim_int {
-	int min;
-	int max;
-};
-
-struct evf_lim_str {
-	int min_len;
-	int max_len;
-};
-
-/*
- * Returns name for type.
- */
-const char      *evf_get_type_name(enum evf_param_t type);
-
-#endif /* __EVFILTER_PARAM_H__ */
+#endif /* __EVF_STRUCT_H__ */

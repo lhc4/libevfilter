@@ -39,8 +39,8 @@
 #include <errno.h>
 #include <limits.h>
 
-#include "evfilter_struct.h"
-#include "evfilter_priv.h"
+#include "evf_struct.h"
+#include "evf_priv.h"
 
 struct scale {
 	int maxx;

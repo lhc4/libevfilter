@@ -36,7 +36,8 @@
 /*
  * Insert into sorted linked list
  */
-static struct evf_io_queue_memb *list_insert(struct evf_io_queue_memb *root, struct evf_io_queue_memb *memb)
+static struct evf_io_queue_memb *list_insert(struct evf_io_queue_memb *root,
+                                             struct evf_io_queue_memb *memb)
 {
 	struct evf_io_queue_memb *prev = NULL, *here = root;
 
@@ -62,7 +63,8 @@ static struct evf_io_queue_memb *list_insert(struct evf_io_queue_memb *root, str
 /*
  * Remove from sorted linked list
  */
-static struct evf_io_queue_memb *list_delete(struct evf_io_queue_memb *root, int fd)
+static struct evf_io_queue_memb *list_delete(struct evf_io_queue_memb *root,
+                                             int fd)
 {
 	struct evf_io_queue_memb *prev = NULL, *here = root;
 
@@ -128,7 +130,8 @@ int evf_io_queue_wait(struct evf_io_queue *queue, struct timeval *timeout)
 		return 0;
 	}
 
-	if ((ret = select(queue->root->fd + 1, &queue->rfds, NULL, NULL, timeout)) < 0)
+	if ((ret = select(queue->root->fd + 1, &queue->rfds, NULL, NULL,
+	                  timeout)) < 0)
 		return ret;
 
 	for (here = queue->root; here != NULL; here = here->next) {
@@ -151,7 +154,8 @@ int evf_io_queue_wait(struct evf_io_queue *queue, struct timeval *timeout)
 			FD_CLR(here->fd, &queue->rfds);
 
 			if (ret_read & EVF_IO_QUEUE_REM)
-				queue->root = list_delete(queue->root, here->fd);
+				queue->root = list_delete(queue->root,
+				                          here->fd);
 
 		} else
 			FD_SET(here->fd, &queue->rfds);
@@ -193,7 +197,7 @@ void evf_io_queue_rem(struct evf_io_queue *queue, int fd)
 	}
 }
 
-unsigned int evf_io_queue_count(struct evf_io_queue *queue)
+unsigned int evf_io_queue_get_count(struct evf_io_queue *queue)
 {
 	return queue->cnt;
 }

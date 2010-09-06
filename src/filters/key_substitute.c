@@ -33,8 +33,7 @@
 #include <stdlib.h>
 #include <linux/input.h>
 
-#include "evfilter.h"
-#include "evfilter_priv.h"
+#include "evf_priv.h"
 
 struct key_substitute {
 	int *from;

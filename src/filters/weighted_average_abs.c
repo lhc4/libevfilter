@@ -32,8 +32,8 @@
 #include <linux/input.h>
 #include <errno.h>
 
-#include "evfilter_struct.h"
-#include "evfilter_priv.h"
+#include "evf_struct.h"
+#include "evf_priv.h"
 
 #define sgn(x) ((x)>0?1:(-1))
 

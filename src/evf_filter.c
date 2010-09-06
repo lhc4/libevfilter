@@ -22,10 +22,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "evfilter_filter.h"
+
+#include "evf_filter.h"
 #include "filters/filters.h"
-#include "evfilter_err.h"
-#include "evfilter_struct.h"
+#include "evf_err.h"
+#include "evf_struct.h"
 
 /*
  * Global tables
@@ -98,7 +99,8 @@ const char *evf_filter_get_desc(struct evf_filter *filter)
 /*
  * Loads one filter
  */
-struct evf_filter *evf_filter_load(const char *name, char *params, union evf_err *err)
+struct evf_filter *evf_filter_load(const char *name, char *params,
+                                   union evf_err *err)
 {
 	int i = getfilter(name);
 
@@ -167,7 +169,8 @@ struct evf_filter *evf_filters_last(struct evf_filter *root)
 /*
  * Merge two linked lists of filters.
  */
-struct evf_filter *evf_filters_merge(struct evf_filter *root, struct evf_filter *filters)
+struct evf_filter *evf_filters_merge(struct evf_filter *root,
+                                     struct evf_filter *filters)
 {
 	struct evf_filter *last;
 	

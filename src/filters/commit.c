@@ -31,7 +31,7 @@
 #include <string.h>
 #include <linux/input.h>
 
-#include "evfilter_struct.h"
+#include "evf_struct.h"
 
 struct commit {
 	void (*commit)(struct input_event*, void *data);

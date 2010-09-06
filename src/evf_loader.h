@@ -21,40 +21,41 @@
 
 /*
   
-  Here comes struct evfilter definition, do not inlucde this file into any
-  code outside of this library. To acces it's mebers use functions defined
-  in evfilter_filter.h.
-  
+  Evfilter loader gives you simple api to load all filters from one
+  configuration file.
+
+  The file consist of several blocks like this:
+
+  Filter = FilterName
+	param1 = value
+	param2 = value
+  EndFilter
+
+  Every content between "Filter = FilterName" and "EndFilter" is simply passed
+  to evf_load_filter().
+
  */
 
-#ifndef __EVFILTER_STRUCT_H__
-#define __EVFILTER_STRUCT_H__
+#ifndef __EVF_LOADER_H__
+#define __EVF_LOADER_H__
 
-struct input_event;
+struct evf_filter;
+union evf_err;
 
 /*
- * Main evfilter struct
+ * Create filter line from configuration file.
+ *
+ * On succesfull operation pointer to filter line is returned. NULL is valid
+ * value for empty file, so don't forget to check err in this case unless you
+ * say empty file is invalid configuration.
  */
-struct evf_filter {
-	/*
-	 * This function is invoked from previous filter and your filter
-	 * should invoke self->next->modify(self->next, ev) on any event
-	 * that was generated/passed trough your filter.
-	 */
-	void (*modify)(struct evf_filter *self, struct input_event *ev);
-	/* Either NULL, or additional free helper */
-	void *(*free)(struct evf_filter *self);
-	/* Filter name */
-	char *name;
-	/* Filter description */
-	char *desc;
-	/* Next filter in filter line. */
-	struct evf_filter *next;
-	/* 
-	 * Iternal filter data, usually structure holding filter state. 
-	 * In case filter is not stateless.
-	 */
-	char data[0];
-};
+struct evf_filter *evf_load_filters(const char *path, union evf_err *err);
 
-#endif /* __EVFILTER_STRUCT_H__ */
+/*
+ * Dtto, but compose path from path and filename.
+ */
+struct evf_filter *evf_load_filters_compose(const char *path, const char *file,
+                                            union evf_err *err);
+
+
+#endif /* __EVF_LOADER_H__ */

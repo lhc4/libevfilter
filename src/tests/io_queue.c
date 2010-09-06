@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (!evf_io_queue_count(queue)) {
+	if (evf_io_queue_get_count(queue) == 0) {
 		fprintf(stderr, "No filed descriptors in queue, exiting...\n");
 		return 0;
 	}

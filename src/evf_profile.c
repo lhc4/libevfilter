@@ -26,8 +26,10 @@
 #include <stdio.h>
 
 #include "config.h"
-#include "evfilter_profile.h"
-#include "evfilter_loader.h"
+#include "evf_filter.h"
+#include "evf_loader.h"
+#include "evf_err.h"
+#include "evf_profile.h"
 #include "linux_input.h"
 
 /* 
@@ -90,8 +92,10 @@ static int check_for_matching_rule(int fd, const char *type, const char *value)
  */
 static FILE *open_profilerc(const char *path, union evf_err *err)
 {
-	char *str_buf = malloc(strlen(path) + strlen(EVFILTER_PROFILE_FILE) + 1);
+	char *str_buf;
 	FILE *f;
+	
+	str_buf = malloc(strlen(path) + strlen(EVFILTER_PROFILE_FILE) + 1);
 
 	if (str_buf == NULL) {
 		err->type = evf_errno;
@@ -126,7 +130,8 @@ struct evf_filter *evf_load_system_profile(int fd, union evf_err *err)
 /*
  * Try to open prifile file.
  */
-struct evf_filter *evf_load_profile(const char *path, int fd, union evf_err *err)
+struct evf_filter *evf_load_profile(const char *path, int fd,
+                                    union evf_err *err)
 {
 	FILE *profile;
 	char type[256];
@@ -154,16 +159,22 @@ struct evf_filter *evf_load_profile(const char *path, int fd, union evf_err *err
 
 				if (has_matched) {
 					/* try to load filters */
-					tmp = evf_load_filters_compose(path, value, err);
+					tmp = evf_load_filters_compose(path,
+					                               value,
+								       err);
 					
-					/* err is filled from evf_load_filters_compose */
+					/* 
+					 * err is filled by 
+					 * evf_load_filters_compose
+					 */
 					if (err->type != evf_ok) {
 						evf_filters_free(filters);
 						return NULL;
 					}
 
-					/* merge all filters into one linked list */
-					filters = evf_filters_merge(filters, tmp);
+					/*  merge all filters into one list */
+					filters = evf_filters_merge(filters,
+					                            tmp);
 
 					has_matched = -1;
 				}

@@ -98,6 +98,6 @@ void evf_io_queue_rem(struct evf_io_queue *queue, int fd);
 /*
  * Returns number of members in the queue.
  */
-unsigned int evf_io_queue_count(struct evf_io_queue *queue);
+unsigned int evf_io_queue_get_count(struct evf_io_queue *queue);
 
 #endif /* __EVF_IO_QUEUE_H__ */

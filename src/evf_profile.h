@@ -19,56 +19,52 @@
  *                                                                            *
  ******************************************************************************/
 
-#include <string.h>
-#include <stdio.h>
-#include "evfilter_err.h"
-#include "evfilter_param.h"
+/*
+ 
+  Profile in evfilter library is way to do either system wide configuration,
+  eg. touchscreen calibration or specify some configuration for your own tool
+  eg. slow down all relative pointers for console mouse daemon.
 
-//#define DPRINT(...) { fprintf(stderr, "%s: %i: ", __FILE__, __LINE__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n"); }
-#define DPRINT(...)
+  Basically profile is directory with profile file that contains matching rules
+  and some profile files where any such file contains list of modules to load.
+  
+  Profile file consist of several lines where each one defines one of following
+  matching rules:
+  
+  Device /path/to/device               //we compare minor and major number here
+  Name Input Hardware Name
+  Phys /device/phys/from/kernel
+  Bits Hardware capabilities
+  File evfilter configuration to load
+
+  See /proc/bus/input/devices for identifying your hardware.
+
+  System wide configuration should live in /etc/evfilter/profile/profilerc or
+  something close.
+
+*/
+
+#ifndef __EVF_PROFILE_H__
+#define __EVF_PROFILE_H__
+
+struct evf_filter;
+union evf_err;
 
 /*
- * Print error message according to union evf_err
- * TODO: convert error message to string
+ * Load system wide configuration.
+ *
+ * Takes file descriptor to input device, returns list of filters.
+ *
+ * You should allways check evf_err_t in err, because NULL here is 
+ * correct return value.
  */
-void evf_err_print(union evf_err *err)
-{
-	if (err->type == evf_ok) {
-		printf("Operation was succesfull.\n");
-	}
+struct evf_filter *evf_load_system_profile(int fd, union evf_err *err);
 
-	if (err->type == evf_errno) {
-		printf("Errno: %s\n", strerror(err->err_no.err_no));
-		return;
-	}
+/*
+ * Same as above, but for user defined profile directory. 
+ */
+struct evf_filter *evf_load_profile(const char *path, int fd,
+                                    union evf_err *err);
 
-	if (err->type != evf_errpar) {
-		printf("Internal Error: Invalid error type (%i) !\n", err->type);
-		return;
-	}
 
-	switch (err->param.etype) {
-		case evf_emissing:
-			printf("Parameter `%s' is missing.\n", err->param.name);
-		break;
-		case evf_epname:
-			printf("Invalid parameter `%s'.\n", err->param.name);
-		break;
-		case evf_efname:
-			printf("Invalid filter name `%s'.\n", err->param.name);
-		break;
-		case evf_einval:
-			printf("Invalid value `%s' for parameter `%s'. Expected %s.\n",
-			       err->param.value, err->param.name, evf_get_type_name(err->param.ptype));
-		break;
-		case evf_erange:
-			//TODO: print range
-			printf("Parameter `%s' out of range.\n", err->param.name);
-		break;
-		case evf_eredef:
-			printf("Parameter `%s' redefined.\n", err->param.name);
-		break;
-		default:
-			printf("Internal Error: Invalid error number (%i) !\n", err->param.ptype);
-	}
-}
+#endif /* __EVF_PROFILE_H__ */

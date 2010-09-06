@@ -27,15 +27,15 @@
 #include <linux/input.h>
 #include <stdio.h>
 
-#include "evfilter_line.h"
+#include "evf_line.h"
 
 #include "filters/filters.h"
-#include "evfilter_filter.h"
-#include "evfilter_err.h"
-#include "evfilter_profile.h"
+#include "evf_filter.h"
+#include "evf_err.h"
+#include "evf_profile.h"
 #include "linux_input.h"
 
-#include "evfilter_struct.h"
+#include "evf_struct.h"
 
 /*
  * Read events from file descriptor and pass them to filter line
@@ -87,7 +87,11 @@ static int open_input_device(const char *input_device, union evf_err *err)
 /*
  * Create input line
  */
-struct evf_line *evf_line_create(const char *input_device, void (*commit)(struct input_event *ev, void *priv), void *priv, unsigned int use_barriers, union evf_err *err)
+struct evf_line *evf_line_create(const char *input_device,
+                                 void (*commit)(struct input_event *ev,
+				                void *priv),
+				 void *priv, unsigned int use_barriers,
+				 union evf_err *err)
 {
 	struct evf_line   *line;
 	struct evf_filter *fcommit;

@@ -28,29 +28,33 @@
 #include <limits.h>
 #include <ctype.h>
 #include <stdio.h>
+
 #include "key_parser.h"
-#include "evfilter_param.h"
-#include "evfilter_err.h"
+
+#include "evf_param.h"
+#include "evf_err.h"
 
 //#define DPRINT(...) { fprintf(stderr, "%s: %i: ", __FILE__, __LINE__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n"); }
 #define DPRINT(...)
 
-static const char *evf_type_names[] = { "Key", "Keys", "Integer", "Float", "String", "Path to file", "Bool" };
+static const char *evf_type_names[] = {
+	"Key", "Keys", "Integer", "Float",
+	"String", "Path to file", "Bool"
+};
 
-/*
- * Default limits.
- */
+/* Default limits */
 static struct evf_lim_int evfilter_int_limits = {INT_MIN, INT_MAX};
 
-/*
- * Evt_param_t <-> string translation
+/* 
+ * Evt_param_t <-> string translation.
  */
 const char *evf_get_type_name(enum evf_param_t type)
 {
 	return evf_type_names[type];
 }
 
-static int evfilter_load_float(union evf_err *err, char *str, float *val, struct evf_param *param)
+static int evfilter_load_float(union evf_err *err, char *str, float *val,
+                               struct evf_param *param)
 {
 	float fval;
 	char *ptr;
@@ -75,7 +79,8 @@ static int evfilter_load_float(union evf_err *err, char *str, float *val, struct
 /*
  * Converts string to integer and checks limits.
  */
-static int evfilter_load_int(union evf_err *err, char *str, int *val, struct evf_param *param)
+static int evfilter_load_int(union evf_err *err, char *str, int *val,
+                             struct evf_param *param)
 {
 	long int lval;
 	int      ival;
@@ -145,7 +150,8 @@ static int evfilter_load_int(union evf_err *err, char *str, int *val, struct evf
  * stdout == standart out
  * stderr == standart err
  */
-static int evfilter_load_file(union evf_err *err, char *str, FILE **f, struct evf_param *param)
+static int evfilter_load_file(union evf_err *err, char *str, FILE **f,
+                              struct evf_param *param)
 {
 	if (!strcasecmp(str, "stdout")) {
 		*f = stdout;
@@ -182,14 +188,19 @@ static int evfilter_load_file(union evf_err *err, char *str, FILE **f, struct ev
  * No
  * Off
  */
-static int evfilter_load_bool(union evf_err *err, char *str, int *val, struct evf_param *param)
+static int evfilter_load_bool(union evf_err *err, char *str, int *val,
+                              struct evf_param *param)
 {
-	if (!strcasecmp(str, "True") || !strcasecmp(str, "Yes") || !strcasecmp(str, "On")) {
+	if (!strcasecmp(str, "True") || 
+	    !strcasecmp(str, "Yes")  ||
+	    !strcasecmp(str, "On")) {
 		*val = 1;
 		return 0;
 	}
 
-	if (!strcasecmp(str, "False") || !strcasecmp(str, "No") || !strcasecmp(str, "Off")) {
+	if (!strcasecmp(str, "False") ||
+	    !strcasecmp(str, "No")    ||
+	    !strcasecmp(str, "Off")) {
 		*val = 0;
 		return 0;
 	}
@@ -203,8 +214,8 @@ static int evfilter_load_bool(union evf_err *err, char *str, int *val, struct ev
 	return -1;
 }
 
-/*
- * Eats all white-spaces.
+/* 
+ * Eats all white-spaces
  */
 static void evfilter_eat_spaces(char **str)
 {
@@ -357,7 +368,8 @@ static int evfilter_count_params(struct evf_param params[])
  * All filter parameters are stored in string cfg in format
  * parameter_name = parameter
  */
-int evf_load_params(union evf_err *err, char *cfg, struct evf_param params[], ...)
+int evf_load_params(union evf_err *err, char *cfg, struct evf_param params[],
+                    ...)
 {
 	va_list list;
 	int n = evfilter_count_params(params);
@@ -420,11 +432,13 @@ int evf_load_params(union evf_err *err, char *cfg, struct evf_param params[], ..
 
 		switch (params[i].type) {
 			case evf_int:
-				if (evfilter_load_int(err, values[i], va_arg(list, int*), &params[i]))
+				if (evfilter_load_int(err, values[i],
+				    va_arg(list, int*), &params[i]))
 					return -1;
 			break;
 			case evf_key:
-				if (evfilter_load_key(values[i], va_arg(list, int*))) {
+				if (evfilter_load_key(values[i],
+				    va_arg(list, int*))) {
 					err->type        = evf_errpar;
 					err->param.etype = evf_einval;
 					err->param.ptype = evf_key;
@@ -435,18 +449,21 @@ int evf_load_params(union evf_err *err, char *cfg, struct evf_param params[], ..
 				}
 			break;
 			case evf_file:
-				if (evfilter_load_file(err, values[i], va_arg(list, FILE**), &params[i]))
+				if (evfilter_load_file(err, values[i],
+				    va_arg(list, FILE**), &params[i]))
 					return -1;
 			break;
 			case evf_str:
 				*va_arg(list, char**) = values[i];
 			break;
 			case evf_bool:
-				if (evfilter_load_bool(err, values[i], va_arg(list, int*), &params[i]))
+				if (evfilter_load_bool(err, values[i],
+				    va_arg(list, int*), &params[i]))
 					return -1;
 			break;
 			case evf_float:
-				if (evfilter_load_float(err, values[i], va_arg(list, float*), &params[i]))
+				if (evfilter_load_float(err, values[i],
+				    va_arg(list, float*), &params[i]))
 					return -1;
 			break;
 		}

@@ -82,7 +82,13 @@ int main(int argc, char *argv[])
 	}
 
 	for(;;) {
-		read(fd, &ev, sizeof(struct input_event));
+		int size = sizeof (struct input_event);
+
+		if (read(fd, &ev, size) < size) {
+			fprintf(stderr, "Error reading from fd: %s\n",
+			        strerror(errno));
+			exit(EXIT_FAILURE);
+		}
 		
 		if (ev.type == EV_KEY) {
 			printf("key %s\n", keyparser_getname(ev.code));
