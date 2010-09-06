@@ -31,6 +31,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "evfilter.h"
 
@@ -41,7 +42,6 @@ static void input_commit(struct input_event *ev, void *data)
 	int uinput_fd = (int) data;
 	
 	write(uinput_fd, ev, sizeof (struct input_event));
-	printf("Event!\n");
 }
 
 /*
@@ -57,7 +57,7 @@ static int line_data(struct evf_io_queue_memb *self)
 
 static void device_plugged(const char *dev)
 {
-	int fd;
+	int fd, ret;
 	struct uinput_user_dev dev_info;
 	struct evf_line *line;
 	union evf_err err;
@@ -87,7 +87,7 @@ static void device_plugged(const char *dev)
 	 * configuration into evfilter input line.
 	 */
 	//TODO: hack
-	line = evf_line_create(dev, input_commit, (void*)fd, 0, &err);
+	line = evf_line_create(dev, input_commit, (void*)fd, 0, &err, 0);
 
 	if (line == NULL) {
 		/* no filter configured for this inpud device */
@@ -111,6 +111,9 @@ static void device_plugged(const char *dev)
 		return;
 	}
 
+	if ((ret = evf_input_grab(evf_line_fd(line))) != 0)
+		fprintf(stderr, "Failed to grab device %i.\n", ret);
+
 	fprintf(stderr, "Evfilter line for %s has been created.\n", dev);
 }
 
@@ -126,9 +129,22 @@ static int hotplug_data(struct evf_io_queue_memb *self
 	return EVF_IO_QUEUE_OK;
 }
 
+static int looping = 1;
+
+static void sighandler(int sig __attribute__ ((unused)))
+{
+	looping = 0;
+}
+
 int main(int argc, char *argv[])
 {
 	int fd;
+	struct evf_io_queue_memb *i;
+	
+	/* register handler */
+	signal(SIGQUIT, sighandler);
+	signal(SIGTERM, sighandler);
+	signal(SIGINT, sighandler);
 
 	/* create io queue for all fds */
 	queue = evf_io_queue_new();
@@ -153,8 +169,23 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	for (;;)
+	while (looping)
 		evf_io_queue_wait(queue, NULL);
+
+	fprintf(stderr, "Got signal, exitting ...\n");
+
+	/* cleanup */	
+	EVF_IO_QUEUE_MEMB_LOOP(queue, i) {
+		if (i->priv != NULL) {
+			struct evf_line *line = i->priv;
+			int fd;
+			/* ungrab device */
+			evf_input_ungrab(line->fd);
+			/* destroy evf line and get commit priv pointer */
+			fd = (int) evf_line_destroy(line);
+			evf_uinput_destroy(fd);	
+		}
+	}
 
 	return 0;
 }

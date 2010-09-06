@@ -62,12 +62,16 @@ int evf_line_process(struct evf_line *line);
  * Allocate space for input line, inserts commit filter and additionally
  * barrier filter, if variable use_barriers is non zero, filter barriers with
  * history = use_barriers is attached before commit filter.
+ * 
+ * With even_empty == 0 line with just commit and possibly barrier filters
+ * would be created when no additional filters are found in system
+ * configuration.
  */
 struct evf_line *evf_line_create(const char *input_device,
                                  void (*commit)(struct input_event *ev,
 				                void *priv),
 				 void *priv, unsigned int use_barriers,
-				 union evf_err *err);
+				 union evf_err *err, int even_empty);
 
 /*
  * Attach filter at the end of the line, but before commit and barrier.

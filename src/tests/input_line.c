@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 		
 		printf("Opening %s ... ", argv[i]);
 		
-		line[line_idx] = evf_line_create(argv[i], commit, NULL, 20, &err);
+		line[line_idx] = evf_line_create(argv[i], commit, NULL, 20, &err, 1);
 		
 		if (line[line_idx] == NULL) {
 			printf("Error creating evf_line\n");

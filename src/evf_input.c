@@ -222,7 +222,7 @@ const char *evf_input_value(struct input_event *ev)
 
 int evf_input_grab(int fd)
 {
-	return ioctl(fd, EVIOCGRAB, 0);
+	return ioctl(fd, EVIOCGRAB, 1);
 }
 
 

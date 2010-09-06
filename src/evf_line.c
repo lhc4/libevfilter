@@ -91,10 +91,11 @@ struct evf_line *evf_line_create(const char *input_device,
                                  void (*commit)(struct input_event *ev,
 				                void *priv),
 				 void *priv, unsigned int use_barriers,
-				 union evf_err *err)
+				 union evf_err *err, int even_empty)
 {
 	struct evf_line   *line;
 	struct evf_filter *fcommit;
+	struct evf_filter *begin;
 	struct evf_filter *fbarrier = NULL;	
 	int fd;
 
@@ -102,6 +103,21 @@ struct evf_line *evf_line_create(const char *input_device,
 
 	if (fd < 0)
 		return NULL;
+	
+	begin = evf_load_system_profile(fd, err);
+
+	/* err is filled from evf_load_system_profile */
+	if (err->type != evf_ok) {
+		close(fd);
+		return NULL;
+	}
+
+	/* we should not create empty line */
+	if (!even_empty && begin == NULL) {
+		err->type = evf_ok;
+		close(fd);
+		return NULL;
+	}
 
 	/* let's the allocation begins ;) */
 	line = malloc(sizeof (struct evf_line) + strlen(input_device) + 1);
@@ -109,20 +125,14 @@ struct evf_line *evf_line_create(const char *input_device,
 	if (line == NULL) {
 		err->type = evf_errno;
 		err->err_no.err_no = errno;
+		evf_filters_free(begin);
 		close(fd);
 		return NULL;
 	}
 
 	/* load system profiles */
-	line->begin = evf_load_system_profile(fd, err);
+	line->begin = begin;
 	line->end   = evf_filters_last(line->begin);
-	
-	/* err is filled from evf_load_system_profile */
-	if (err->type != evf_ok) {
-		free(line);
-		close(fd);
-		return NULL;
-	}
 
 	fcommit = evf_commit_alloc(commit, priv);
 

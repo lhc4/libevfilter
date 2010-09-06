@@ -168,7 +168,7 @@ static void device_plugged(const char *dev)
 	ptr->color = color;
 
 
-	line = evf_line_create(dev, commit, ptr, 10, &err);
+	line = evf_line_create(dev, commit, ptr, 10, &err, 1);
 
 	if (err.type != evf_ok) {
 		free(ptr);

@@ -100,6 +100,10 @@ void evf_io_queue_rem(struct evf_io_queue *queue, int fd);
  */
 unsigned int evf_io_queue_get_count(struct evf_io_queue *queue);
 
-#define EVF_IO_QUEUE_GET_PRIV(queue, type) ((type)(queue)->priv)
+/*
+ * Loop trough all queue memebers.
+ */
+#define EVF_IO_QUEUE_MEMB_LOOP(queue, i) \
+	for ((i) = (queue)->root; (i) != NULL; (i) = (i)->next)
 
 #endif /* __EVF_IO_QUEUE_H__ */
