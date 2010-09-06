@@ -217,65 +217,65 @@
    Close file descriptor and do other cleanups.
   </p>
 
- <h3>Select queue api</h3>
+ <h3>IO queue api</h3>
  <p>
-  Select queue is abstraction to traditional <i>select()</i> call.
+  IO queue is abstraction to traditional unix <i>select()</i> call.
  </p>
   
-  <a name=select_flag></a>
+  <a name=io_queue_flag></a>
 <pre>
- EVF_SEL_OK    - read was succesful
- EVF_SEL_REM   - remove member from queue
- EVF_SEL_CLOSE - close file descriptor
- EVF_SEL_DFREE - call free on void* priv
+ EVF_IO_QUEUE_OK    - read was succesful
+ EVF_IO_QUEUE_REM   - remove member from queue
+ EVF_IO_QUEUE_CLOSE - close file descriptor
+ EVF_IO_QUEUE_DFREE - call free on void* priv
 </pre>
   <p>
     These flags should be returned by read callback. There are defined as
-    bitfield so it's possible to return for example EVF_SEL_REM | EVF_SEL_CLOSE
-    which would remove descriptor from queue and close filedescriptor. 
+    bitfield so it's possible to combine some of them them for example
+    EVF_IO_QUEUE_REM | EVF_IO_QUEUE_CLOSE which would remove descriptor from
+    queue and close file descriptor. 
   </p>
   <p>
-   EVF_SEL_CLOSE and EVF_SEL_DFREE could be also used as flag for
-   <i>evf_select_destroy()</i>. That would call <i>free()</i> or <i>close()</i>
+   EVF_IO_QUEUE_CLOSE and EVF_IO_QUEUE_DFREE could be also used as flag for
+   <i>evf_io_queue_destroy()</i>. That would call <i>free()</i> and <i>close()</i>
    on every member in queue. Don't forget that calling <i>free()</i> on
    <i>NULL</i> pointer is correct.
   </p>
 <pre>
- <font color="green">struct</font> evf_select_queue *evf_select_new(<font color="green">void</font>);
+ <font color="green">struct</font> evf_io_queue *evf_io_queue_new(<font color="green">void</font>);
 </pre>
   <p>
    Allocate and initalize new queue, returns pointer to newly allocated queue
-   or <i>NULL</i>.
+   or <i>NULL</i> in case of failure.
   </p>
 
 <pre>
- <font color="green">void</font> evf_select_destroy(<font color="green">struct</font> evf_select_queue *queue, <font color="green">int</font> flag);
+ <font color="green">void</font> evf_io_queue_destroy(<font color="green">struct</font> evf_io_queue *queue, <font color="green">int</font> flags);
 </pre>
   <p>
-   Destroy queue. Flag could be one of following <i>0</i> or EVF_SEL_DFREE
-   and/or EVF_SEL_CLOSE.
+   Destroy queue. Flags could be one of following <i>0</i> or EVF_IO_QUEUE_DFREE
+   and/or EVF_IO_QUEUE_CLOSE.
   </p>
 
 <pre>
- <font color="green">int</font> evf_select(<font color="green">struct</font> evf_select_queue *queue, <font color="green">struct</font> timeval *timeout);
+ <font color="green">int</font> evf_io_queue_wait(<font color="green">struct</font> evf_io_queue *queue, <font color="green">struct</font> timeval *timeout);
 </pre>
   <p>
-   Wait for data on any descriptor in select queue. When timeout is not needed
+   Wait for data on any descriptor in io queue. When timeout is not needed
    pass <i>NULL</i> as a second parameter.
   </p>
 
 <pre>
- <font color="green">int</font> evf_select_add(<font color="green">struct</font> evf_select_queue *queue, <font color="green">int</font> fd, <font color="green">int</font> (*read)(<font color="green">struct</font> evf_select_memb *self), <font color="green">void</font> *priv);
+ <font color="green">int</font> evf_io_queue_add(<font color="green">struct</font> evf_io_queue *queue, <font color="green">int</font> fd, <font color="green">int</font> (*read)(<font color="green">struct</font> evf_io_queue_memb *self), <font color="green">void</font> *priv);
 </pre>
   <p>
-   Add file descriptor <i>fd</i> into select queue as well as read callback and
+   Add file descriptor <i>fd</i> into io queue as well as read callback and
    priv pointer to your data strucures. Read callback is called when data are
-   ready on file descriptor and should return <a href=#select_flag>select
-   flag</a>.
+   ready on file descriptor and should return <a href=#io_queue_flag>io_queue_flag</a>.
   </p>
 
 <pre>
- <font color="green">int</font> evf_select_rem(<font color="green">struct</font> evf_select_queue *queue, <font color="green">int</font> fd);
+ <font color="green">int</font> evf_io_queue_rem(<font color="green">struct</font> evf_io_queue *queue, <font color="green">int</font> fd);
 </pre>
   <p>
    Remove file descriptor from queue, beware that file descriptor is not closed
@@ -283,7 +283,7 @@
   </p>
 
 <pre>
- <font color="green">unsigned int</font> evf_select_count(<font color="green">struct</font> evf_select_queue *queue);
+ <font color="green">unsigned int</font> evf_io_queue_count(<font color="green">struct</font> evf_io_queue *queue);
 </pre>
   <p>
    Returns number of file descriptors in queue.
