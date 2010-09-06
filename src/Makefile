@@ -29,9 +29,9 @@ libevfilter.so: make_filters make_keyparser $(OBJECTS) $(HEADERS) $(KEYPARSER_HE
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # install
-INSTALL_HEADERS=evfilter.h evfilter_err.h evfilter_filter.h evfilter_hotplug.h        \
-                evfilter_line.h evfilter_loader.h evfilter_param.h evfilter_profile.h \
-                evfilter_select.h evfilter_struct.h linux_input.h
+INSTALL_HEADERS=evfilter.h evf_err.h evf_filter.h evf_hotplug.h     \
+                evf_line.h evf_loader.h evf_param.h evf_profile.h   \
+                evf_io_queue.h evf_struct.h evf_input.h evf_uinput.h
 
 install: libevfilter.so
 	install libevfilter.so /usr/lib/

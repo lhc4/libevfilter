@@ -9,6 +9,9 @@ all: $(BINARIES)
 %: %.c
 	$(CC) $(CFLAGS) $< -o $@
 
+install:
+	install -m 775 $(BINARIES) /usr/sbin/
+
 clean:
 	rm -rf $(BINARIES)
 	
