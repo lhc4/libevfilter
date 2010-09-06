@@ -55,6 +55,27 @@ static int line_data(struct evf_io_queue_memb *self)
 	return EVF_IO_QUEUE_OK;
 }
 
+/*
+ * Returns 1 if device is created by evfd.
+ */
+static int our_input_device(const char *dev)
+{
+	int fd = open(dev, O_RDONLY);
+	char name[128];
+
+	if (fd < 0)
+		return 1;
+
+	evf_input_get_name(fd, name, 128);
+
+	close(fd);
+
+	if (!strcmp(name, "uinput device"))
+		return 1;
+
+	return 0;
+}
+
 static void device_plugged(const char *dev)
 {
 	int fd, ret;
@@ -62,13 +83,16 @@ static void device_plugged(const char *dev)
 	struct evf_line *line;
 	union evf_err err;
 
+	if (our_input_device(dev))
+		return;
+
 	fprintf(stderr, "Trying to create input line for %s.\n", dev);
 	/*
 	 * Create new input device for the other end of input line.
 	 */
 	//TODO: do this correctly
 	memset(&dev_info, 0, sizeof (dev));
-	strcpy(dev_info.name, "test");
+	strcpy(dev_info.name, "uinput device");
 
 	fd = evf_uinput_create(&dev_info);
 
