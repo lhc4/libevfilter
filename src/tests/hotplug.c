@@ -12,10 +12,10 @@
  * GNU General Public License for more details.                               *
  *                                                                            *
  * You should have received a copy of the GNU General Public License          *
- * along with Evfilter library; if not, write to the Free Software            *
+ * along with evfilter library; if not, write to the Free Software            *
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA *
  *                                                                            *
- * Copyright (C) 2008-2009 Cyril Hrubis                                       *
+ * Copyright (C) 2008-2010 Cyril Hrubis <metan@ucw.cz>                        *
  *                                                                            *
  ******************************************************************************/
 
