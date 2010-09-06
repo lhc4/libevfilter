@@ -24,7 +24,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "evfilter_select.h"
+#include "evf_io_queue.h"
 
 /*
 #include <stdio.h>
@@ -36,9 +36,9 @@
 /*
  * Insert into sorted linked list
  */
-static struct evf_select_memb *list_insert(struct evf_select_memb *root, struct evf_select_memb *memb)
+static struct evf_io_queue_memb *list_insert(struct evf_io_queue_memb *root, struct evf_io_queue_memb *memb)
 {
-	struct evf_select_memb *prev = NULL, *here = root;
+	struct evf_io_queue_memb *prev = NULL, *here = root;
 
 	DEBUG_PRINT("Inserting into list\n");
 
@@ -62,9 +62,9 @@ static struct evf_select_memb *list_insert(struct evf_select_memb *root, struct 
 /*
  * Remove from sorted linked list
  */
-static struct evf_select_memb *list_delete(struct evf_select_memb *root, int fd)
+static struct evf_io_queue_memb *list_delete(struct evf_io_queue_memb *root, int fd)
 {
-	struct evf_select_memb *prev = NULL, *here = root;
+	struct evf_io_queue_memb *prev = NULL, *here = root;
 
 	while (here != NULL && here->fd != fd) {
 		prev = here;
@@ -85,9 +85,9 @@ static struct evf_select_memb *list_delete(struct evf_select_memb *root, int fd)
 	return root;
 }
 
-struct evf_select_queue *evf_select_new(void)
+struct evf_io_queue *evf_io_queue_new(void)
 {
-	struct evf_select_queue *queue = malloc(sizeof(struct evf_select_queue));
+	struct evf_io_queue *queue = malloc(sizeof(struct evf_io_queue));
 
 	if (queue == NULL)
 		return NULL;
@@ -99,16 +99,16 @@ struct evf_select_queue *evf_select_new(void)
 	return queue;
 }
 
-void evf_select_destroy(struct evf_select_queue *queue, int flag)
+void evf_io_queue_destroy(struct evf_io_queue *queue, int flags)
 {
-	struct evf_select_memb *here, *prev = NULL;
+	struct evf_io_queue_memb *here, *prev = NULL;
 
 	for (here = queue->root; here != NULL; prev = here, here = here->next) {
 		
-		if (flag & EVF_SEL_CLOSE)
+		if (flags & EVF_IO_QUEUE_CLOSE)
 			close(here->fd);
 
-		if (flag & EVF_SEL_DFREE)
+		if (flags & EVF_IO_QUEUE_DFREE)
 			free(here->priv);
 	
 		free(prev);
@@ -117,10 +117,10 @@ void evf_select_destroy(struct evf_select_queue *queue, int flag)
 	free(queue);
 }
 
-int evf_select(struct evf_select_queue *queue, struct timeval *timeout)
+int evf_io_queue_wait(struct evf_io_queue *queue, struct timeval *timeout)
 {
 	int ret, ret_read;
-	struct evf_select_memb *here = queue->root;
+	struct evf_io_queue_memb *here = queue->root;
 
 	/* empty queue */
 	if (queue->root == NULL) {
@@ -139,18 +139,18 @@ int evf_select(struct evf_select_queue *queue, struct timeval *timeout)
 			
 			ret_read = here->read(here);
 
-			if (ret_read == EVF_SEL_OK)
+			if (ret_read == EVF_IO_QUEUE_OK)
 				continue;
 
-			if (ret_read & EVF_SEL_CLOSE)
+			if (ret_read & EVF_IO_QUEUE_CLOSE)
 				close(here->fd);
 
-			if (ret_read & EVF_SEL_DFREE)
+			if (ret_read & EVF_IO_QUEUE_DFREE)
 				free(here->priv);
 			
 			FD_CLR(here->fd, &queue->rfds);
 
-			if (ret_read & EVF_SEL_REM)
+			if (ret_read & EVF_IO_QUEUE_REM)
 				queue->root = list_delete(queue->root, here->fd);
 
 		} else
@@ -160,9 +160,12 @@ int evf_select(struct evf_select_queue *queue, struct timeval *timeout)
 	return ret;
 }
 
-int evf_select_add(struct evf_select_queue *queue, int fd, int (*read)(struct evf_select_memb *self), void *priv)
+int evf_io_queue_add(struct evf_io_queue *queue, int fd,
+                     int (*read)(struct evf_io_queue_memb *self), void *priv)
 {
-	struct evf_select_memb *memb = malloc(sizeof(struct evf_select_memb));
+	struct evf_io_queue_memb *memb;
+	
+	memb = malloc(sizeof (struct evf_io_queue_memb));
 
 	DEBUG_PRINT("Inserting fd %i into queue.\n", fd);
 
@@ -181,7 +184,7 @@ int evf_select_add(struct evf_select_queue *queue, int fd, int (*read)(struct ev
 	return 1;
 }
 
-void evf_select_rem(struct evf_select_queue *queue, int fd)
+void evf_io_queue_rem(struct evf_io_queue *queue, int fd)
 {
 	if (FD_ISSET(fd, &queue->rfds)) {
 		FD_CLR(fd, &queue->rfds);
@@ -190,7 +193,7 @@ void evf_select_rem(struct evf_select_queue *queue, int fd)
 	}
 }
 
-unsigned int evf_select_count(struct evf_select_queue *queue)
+unsigned int evf_io_queue_count(struct evf_io_queue *queue)
 {
 	return queue->cnt;
 }

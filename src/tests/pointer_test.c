@@ -41,7 +41,7 @@
 #define Y_RES 640
 
 static SDL_Surface *scr;
-static struct evf_select_queue *queue;
+static struct evf_io_queue *queue;
 
 int init_sdl(void)
 {
@@ -65,15 +65,15 @@ struct pointer {
 /*
  * Here we parse event as it came 
  */
-static int read_event(struct evf_select_memb *self)
+static int read_event(struct evf_io_queue_memb *self)
 {
 	struct evf_line *line = self->priv;
 
 	if (evf_line_process(line) < 0) {
-		return EVF_SEL_REM | EVF_SEL_DFREE;
+		return EVF_IO_QUEUE_REM | EVF_IO_QUEUE_DFREE;
 	}
 
-	return EVF_SEL_OK;
+	return EVF_IO_QUEUE_OK;
 }
 
 static void commit(struct input_event *ev, void *data)
@@ -129,11 +129,11 @@ static void commit(struct input_event *ev, void *data)
 }
 
 
-static int read_hotplug(struct evf_select_memb *self)
+static int read_hotplug(struct evf_io_queue_memb *self)
 {
 	evf_hotplug_rescan();
 	
-	return EVF_SEL_OK;
+	return EVF_IO_QUEUE_OK;
 }
 
 static void device_plugged(const char *dev)
@@ -146,7 +146,7 @@ static void device_plugged(const char *dev)
 
 	snprintf(buf, 128, "--> %s", dev);
 	
-	ptr = malloc(sizeof(struct pointer));
+	ptr = malloc(sizeof (struct pointer));
 
 	if (ptr == NULL) {
 		fprintf(stderr, "Can't allocate memory.\n");
@@ -170,7 +170,7 @@ static void device_plugged(const char *dev)
 	
 	SDL_UpdateRect(scr, 0, 0, X_RES, Y_RES);
 	
-	evf_select_add(queue, line->fd, read_event, line);
+	evf_io_queue_add(queue, line->fd, read_event, line);
 
 	evf_line_print(line);
 }
@@ -193,10 +193,10 @@ int main(void)
 		return 1;
 	}
 	
-	queue = evf_select_new();
+	queue = evf_io_queue_new();
 
 	if (queue == NULL) {
-		fprintf(stderr, "Can't allocate select queue!\n");
+		fprintf(stderr, "Can't allocate io queue!\n");
 		return 1;
 	}
 
@@ -207,10 +207,10 @@ int main(void)
 	
 	SDL_UpdateRect(scr, 0, 0, X_RES, Y_RES);
 
-	evf_select_add(queue, fd, read_hotplug, NULL);
+	evf_io_queue_add(queue, fd, read_hotplug, NULL);
 
 	for (;;)
-		evf_select(queue, NULL);
+		evf_io_queue_wait(queue, NULL);
 
 	return 0;
 }

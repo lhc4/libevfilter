@@ -12,7 +12,7 @@
  * GNU General Public License for more details.                               *
  *                                                                            *
  * You should have received a copy of the GNU General Public License          *
- * along with evfilter library; if not, write to the Free Software            *
+ * along with Evfilter library; if not, write to the Free Software            *
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA *
  *                                                                            *
  * Copyright (C) 2008-2009 Cyril Hrubis                                       *
@@ -20,65 +20,89 @@
  ******************************************************************************/
 
 /*
- 
-  This program is testing hotplug support just by printing hotplug events to
-  stdout.
+
+  This program is testing io queue and hotplug interface by printing out every
+  event from every input device plugged into computer.
 
  */
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+
 #include "evfilter.h"
 #include "linux_input.h"
 
-static void device_plugged(const char *dev)
+static struct evf_io_queue *queue;
+
+static int read_event(struct evf_io_queue_memb *self)
 {
-	char buf[512];
-	int fd;
-	
-	fd = open(dev, O_RDONLY);
-	
-	if (fd < 0)
-		perror(dev);
+	struct input_event ev;
 
-	if (fd > 0) {
-		evf_input_get_name(fd, buf, 512);
-		close(fd);
-	} else
-		buf[0] = '\0';
+	if (read(self->fd, &ev, sizeof (struct input_event)) < 0) {
+		printf("read failed, closing fd %i\n", self->fd);
 
-	printf("--> Device   plugged at: %s (%s)\n", dev, buf);
+		return EVF_IO_QUEUE_REM | EVF_IO_QUEUE_CLOSE;
+	}
+	
+	printf("event from fd %i\n", self->fd);
+
+	evf_input_print(stdout, " *** ", &ev);
+
+	return EVF_IO_QUEUE_OK;
 }
 
-
-static void device_unplugged(const char *dev)
+static void device_plugged(const char *dev)
 {
-	printf("<-- Device unplugged at: %s\n", dev);
+	int fd;
+
+	printf("device %s plugged.\n", dev);
+
+	fd = open(dev, O_RDONLY);
+
+	if (fd < 0) {
+		perror("Can't open device");
+		return;
+	}
+
+	evf_io_queue_add(queue, fd, read_event, NULL);
+}
+
+static int hotplug_rescan(struct evf_io_queue_memb *self)
+{
+	(void) self;
+
+	evf_hotplug_rescan();
+	
+	return 0;
 }
 
 int main(void)
 {
 	int fd;
-	fd_set rfds;
+	queue = evf_io_queue_new();
 
-	printf("Initalizing hotplug!\n");
-
-	if ((fd = evf_hotplug_init(device_plugged, device_unplugged)) < 0) {
-		perror("Error initalizing hotplug!");
-		return 1;
+	if (queue == NULL) {
+		fprintf(stderr, "Can't allocate io queue.\n");
+		exit(EXIT_FAILURE);
 	}
 
-	FD_SET(fd, &rfds);
-
-	while (select(fd + 1, &rfds, NULL, NULL, NULL) != -1) {
-		
-		if (FD_ISSET(fd, &rfds))
-			evf_hotplug_rescan();
-		
-		FD_SET(fd, &rfds);
+	if ((fd = evf_hotplug_init(device_plugged, NULL)) < 0) {
+		fprintf(stderr, "Can't initalize hotplug: %s\n", strerror(errno));
+		exit(EXIT_FAILURE);
 	}
+
+	/* add hotplug into queue */
+	evf_io_queue_add(queue, fd, hotplug_rescan, NULL);
+
+	printf("Sleeping in io queue for events.\n");
+
+	for (;;)
+		evf_io_queue_wait(queue, NULL);
 	
 	return 0;
 }
+

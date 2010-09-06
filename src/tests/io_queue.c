@@ -21,9 +21,9 @@
 
 /*
 
-  This program is testing select queue implementation by opening
+  This program is testing io queue implementation by opening
   /dev/input/eventX passed as arguments and then printing events from these
-  devices as they are turning up.
+  devices as they are showing up.
 
  */
 
@@ -37,36 +37,36 @@
 #include "evfilter.h"
 #include "linux_input.h"
 
-static int event_read(struct evf_select_memb *self)
+static int event_read(struct evf_io_queue_memb *self)
 {
 	struct input_event ev;
 
 	if (read(self->fd, &ev, sizeof(struct input_event)) < 0) {
 		printf("Removing fd %i from queue.\n", self->fd);
-		return EVF_SEL_REM | EVF_SEL_CLOSE;
+		return EVF_IO_QUEUE_REM | EVF_IO_QUEUE_CLOSE;
 	}
 
 	printf("Event from fd %i:\n", self->fd);
 	evf_input_print(stdout, " *** ", &ev);
 	printf("\n");
 
-	return EVF_SEL_OK;
+	return EVF_IO_QUEUE_OK;
 }
 
 int main(int argc, char *argv[])
 {
-	struct evf_select_queue *queue = evf_select_new();
+	struct evf_io_queue *queue = evf_io_queue_new();
 	int i;
 	int fd;
 	char name[256];
 
 	if (argc < 2) {
-		fprintf(stderr, "usage: ./select /dev/input/eventX /dev/input/eventY ...\n");
+		fprintf(stderr, "usage: ./%s /dev/input/eventX /dev/input/eventY ...\n", argv[0]);
 		return -1;
 	}
 
 	if (queue == NULL) {
-		fprintf(stderr, "Can't allocate select queue.\n");	
+		fprintf(stderr, "Can't allocate io queue.\n");	
 		return -1;
 	}
 
@@ -89,19 +89,19 @@ int main(int argc, char *argv[])
 
 		printf("Ok\nDevice name: %s\n", name);
 
-		if (!evf_select_add(queue, fd, event_read, NULL)) {
+		if (!evf_io_queue_add(queue, fd, event_read, NULL)) {
 			printf("Can't add filedescriptor into queue, malloc failed :(\n");
 			close(fd);
 		}
 	}
 
-	if (!evf_select_count(queue)) {
+	if (!evf_io_queue_count(queue)) {
 		fprintf(stderr, "No filed descriptors in queue, exiting...\n");
 		return 0;
 	}
 
 	for (;;)
-		evf_select(queue, NULL);
+		evf_io_queue_wait(queue, NULL);
 
 	return 0;
 }

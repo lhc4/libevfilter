@@ -64,10 +64,8 @@
  */
 #include "evfilter_line.h"
 
-/*
- * Dynamic data structures and call so simplify select() call.
- */
-#include "evfilter_select.h"
+/* io queue for file descriptor build on select() call */
+#include "evf_io_queue.h"
 
 /*
  * Hotplug implementation.

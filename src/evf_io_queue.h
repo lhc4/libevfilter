@@ -21,30 +21,29 @@
 
 /*
 
-   Here is implemented queue for traditional linux select() call.
+   IO queue for traditional unix select() call (tested only on linux).
 
-   In fact, you create queue and add all filedescriptors with callback there.
+   Member in io queue consists of file descriptor and callback, that is called,
+   when data on fd are ready.
 
  */
 
-#ifndef __EVFILTER_SELECT_H__
-#define __EVFILTER_SELECT_H__
+#ifndef __EVF_IO_QUEUE_H__
+#define __EVF_IO_QUEUE_H__
 
 #include <sys/select.h>
 
 /*
- * Returns values for read() callback from evf_select_memb.
+ * Returns values for queue member callback.
  *
- * Use as bitfields, to remove member from queue and close fd:
+ * Use as bitfields, to automatically remove member from queue and close fd:
  *
- * return EVF_SEL_REM | EVF_SEL_CLOSE;
+ * return EVF_IO_QUEUE_REM | EVF_IO_QUEUE_CLOSE;
  */
-#define EVF_SEL_OK    0x00 /* read was succesfull, continue */
-#define EVF_SEL_REM   0x01 /* remove memb from select queue */
-#define EVF_SEL_CLOSE 0x02 /* close fd                      */
-#define EVF_SEL_DFREE 0x04 /* call free on void *priv       */
-
-struct evf_select_queue;
+#define EVF_IO_QUEUE_OK    0x00 /* read was succesfull, continue */
+#define EVF_IO_QUEUE_REM   0x01 /* remove memb from select queue */
+#define EVF_IO_QUEUE_CLOSE 0x02 /* close fd                      */
+#define EVF_IO_QUEUE_DFREE 0x04 /* call free on void *priv       */
 
 /*
  * Select queue member.
@@ -54,51 +53,51 @@ struct evf_select_queue;
  * as we are checking select flags in O(N) anyway
  * there is no reason to make it faster.
  */
-struct evf_select_memb {
+struct evf_io_queue_memb {
 	int fd;
-	int (*read)(struct evf_select_memb *self);
+	int (*read)(struct evf_io_queue_memb *self);
 	void *priv;
-	
-	struct evf_select_memb *next;
+
+	struct evf_io_queue_memb *next;
 };
 
-struct evf_select_queue {
+struct evf_io_queue {
 	unsigned int cnt;
 	fd_set rfds;
-	struct evf_select_memb *root;
+	struct evf_io_queue_memb *root;
 };
 
 /*
  * Create and initalize new queue. Uses malloc, may
  * fail and return NULL.
  */
-struct evf_select_queue *evf_select_new(void);
+struct evf_io_queue *evf_io_queue_new(void);
 
 /*
- * Destroy, you can pass EVF_SEL_CLOSE and EVF_SEL_DFREE as a flag.
+ * Destroy, you can pass EVF_IO_QUEUE_CLOSE and EVF_IO_QUEUE_DFREE as a flag.
  */
-void evf_select_destroy(struct evf_select_queue *queue, int flag);
+void evf_io_queue_destroy(struct evf_io_queue *queue, int flags);
 
 /*
- * Do a select() on file descriptors in queue.
+ * Wait for data on any file descriptor or timeout.
  */
-int evf_select(struct evf_select_queue *queue, struct timeval *timeout);
+int evf_io_queue_wait(struct evf_io_queue *queue, struct timeval *timeout);
 
 /*
  * Insert fd, its read function and priv pointer into queue.
  *
- * Returns 
  */
-int evf_select_add(struct evf_select_queue *queue, int fd, int (*read)(struct evf_select_memb *self), void *priv);
+int evf_io_queue_add(struct evf_io_queue *queue, int fd,
+                     int (*read)(struct evf_io_queue_memb *self), void *priv);
 
 /*
  * Remove fd from queue, filedescriptor is not closed here!.
  */
-void evf_select_rem(struct evf_select_queue *queue, int fd);
+void evf_io_queue_rem(struct evf_io_queue *queue, int fd);
 
 /*
  * Returns number of members in the queue.
  */
-unsigned int evf_select_count(struct evf_select_queue *queue);
+unsigned int evf_io_queue_count(struct evf_io_queue *queue);
 
-#endif /* __EVFILTER_SELECT_H__ */
+#endif /* __EVF_IO_QUEUE_H__ */

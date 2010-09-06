@@ -4,7 +4,7 @@ CFLAGS=-fPIC -Wall -W -ggdb -DDEBUG -Ikeyparser
 
 # source files
 CSOURCES=evfilter_param.c evfilter_err.c evfilter_profile.c evfilter_filter.c\
-         evfilter_loader.c evfilter_line.c linux_input.c evfilter_select.c   \
+         evfilter_loader.c evfilter_line.c linux_input.c evf_io_queue.c   \
 	 evfilter_hotplug.c
 KEYPARSER_HEADERS=keyparser/key_parser.h keyparser/keys.h
 HEADERS=$(shell ls ./*.h)
