@@ -2,7 +2,7 @@
 CC=gcc
 CFLAGS=-Wall -W -ggdb -I.. -L.. -levfilter
 
-BINARIES=param_loader load_all input_line draw io_queue hotplug hotplug pointer_test
+BINARIES=param_loader load_all input_line draw io_queue hotplug hotplug pointer_test uinput
 
 all: $(BINARIES)
 

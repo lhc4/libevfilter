@@ -20,87 +20,77 @@
  ******************************************************************************/
 
 /*
- * Evfilter dump:
- *
- * Writes nice decomposition of event to the FILE.
- * 
- * parameters:
- *
- * prefix = string 
- *  prefix that is printed in every print
- *
- * file = path
- *  path to file to print to, there are two special files stdout and stderr
+  
+  This is test for evf_uinput interface for user input kernel interface, beware
+  that this sends enter keys and if our xserver listens for event input devices
+  by default you end up with enter pressing each second.
+ 
  */
 
-#include <stdlib.h>
+#include <unistd.h>
 #include <stdio.h>
+#include <signal.h>
 #include <string.h>
-#include <linux/input.h>
-#include <errno.h>
+#include "evf_uinput.h"
 
-#include "evf_struct.h"
-#include "evf_priv.h"
-#include "evf_input.h"
+static int sig_flag = 1;
 
-struct dump {
-	FILE *f;
-	char prefix[];
-};
-
-static void modify(struct evf_filter *self, struct input_event *ev)
+static void sighandler(int sig __attribute__ ((unused)))
 {
-	struct dump *dump = (struct dump*) self->data;
-
-	evf_input_print(dump->f, dump->prefix, ev);
-	fprintf(dump->f, "\n");
-
-	if (self->next != NULL)
-		self->next->modify(self->next, ev);
+	sig_flag = 0;
 }
 
-struct evf_filter *evf_dump_alloc(char *prefix, FILE *f)
+static void pack_event(struct input_event *ev, int type, int code, int value)
 {
-	struct evf_filter *evf = malloc(sizeof (struct evf_filter) + sizeof (struct dump) + strlen(prefix) + 1);
-	struct dump *tmp;
-
-	if (evf == NULL)
-		return NULL;
-	
-	tmp = (struct dump*) evf->data;
-	
-	strcpy(tmp->prefix, prefix);
-
-	tmp->f      = f;
-	evf->modify = modify;
-	evf->free   = NULL;
-	evf->name   = "Dump";
-	evf->desc   = "Prints text variant of event into file.";
-
-	return evf;
+	gettimeofday(&ev->time, NULL);
+	ev->type  = type;
+	ev->code  = code;
+	ev->value = value;
 }
 
-static struct evf_param dump_params[] = {
-	{ "prefix", evf_str , NULL },
-	{ "file"  , evf_file, NULL },
-	{ NULL    ,        0, NULL },
-};
-
-struct evf_filter *evf_dump_creat(char *params, union  evf_err *err)
+int main(void)
 {
-	char *prefix;
-	FILE *file;
-	struct evf_filter *evf;
+	int fd;
+	struct uinput_user_dev dev;
+	struct input_event ev;
 
-	if (evf_load_params(err, params, dump_params, &prefix, &file))
-		return NULL;
-	
-	evf = evf_dump_alloc(prefix, file);
-	
-	if (evf == NULL) {
-		err->type = evf_errno;
-		err->err_no.err_no = errno;
+	memset(&dev, 0, sizeof (dev));
+	strcpy(dev.name, "test");
+
+	fd = evf_uinput_create(&dev);
+
+	if (fd < 0) {
+		fprintf(stderr, "Failed to create uinput %i\n", fd);
+		return 1;
 	}
 
-	return evf;
+	signal(SIGQUIT, sighandler);
+	signal(SIGTERM, sighandler);
+	signal(SIGINT, sighandler);
+
+	while (sig_flag) {
+		
+		sleep(1);
+		
+		/* send enter key down */	
+		pack_event(&ev, EV_KEY, KEY_ENTER, 1);
+		write(fd, &ev, sizeof (ev));
+
+		/* send sync */
+		pack_event(&ev, EV_SYN, SYN_REPORT, 0);
+		write(fd, &ev, sizeof (ev));
+
+		/* send enter key up */	
+		pack_event(&ev, EV_KEY, KEY_ENTER, 0);
+		write(fd, &ev, sizeof (ev));
+
+		/* send sync */
+		pack_event(&ev, EV_SYN, SYN_REPORT, 0);
+		write(fd, &ev, sizeof (ev));
+	}
+
+	evf_uinput_destroy(fd);
+	printf("Got signal, exiting...\n");
+
+	return 0;
 }

@@ -22,7 +22,8 @@
 #include <linux/input.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
-#include "linux_input.h"
+
+#include "evf_input.h"
 #include "keyparser/key_parser.h"
 
 int evf_input_get_version(int fd, int *version)
@@ -217,4 +218,15 @@ const char *evf_input_value(struct input_event *ev)
 	}
 
 	return NULL;
+}
+
+int evf_input_grab(int fd)
+{
+	return ioctl(fd, EVIOCGRAB, 0);
+}
+
+
+int evf_input_ungrab(int fd)
+{
+	return ioctl(fd, EVIOCGRAB, 0);
 }

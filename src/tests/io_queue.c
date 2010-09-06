@@ -34,8 +34,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+
 #include "evfilter.h"
-#include "linux_input.h"
 
 static int event_read(struct evf_io_queue_memb *self)
 {

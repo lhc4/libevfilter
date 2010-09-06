@@ -19,92 +19,78 @@
  *                                                                            *
  ******************************************************************************/
 
-/*
-
-  This program is testing io queue and hotplug interface by printing out every
-  event from every input device plugged into computer.
-
- */
+#ifndef __EVF_INPUT_H__
+#define __EVF_INPUT_H__
 
 #include <stdlib.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include <stdio.h>
-#include <errno.h>
-#include <string.h>
 
-#include "evfilter.h"
+struct input_event;
 
-static struct evf_io_queue *queue;
+/*
+ * Returns input version, to print it use:
+ *
+ * printf("%d %d %d", version>>16, version>>8 & 0xff, version & 0xff);
+ */
+int evf_input_get_version(int fd, int *version);
 
-static int read_event(struct evf_io_queue_memb *self)
-{
-	struct input_event ev;
+/*
+ * Returns up to buf_len characters of input device name.
+ */
+int evf_input_get_name(int fd, char *buf, size_t buf_len);
 
-	if (read(self->fd, &ev, sizeof (struct input_event)) < 0) {
-		printf("read failed, closing fd %i\n", self->fd);
+/*
+ * Returns up to buf_len characters of input device phys.
+ */
+int evf_input_get_phys(int fd, char *buf, size_t buf_len);
 
-		return EVF_IO_QUEUE_REM | EVF_IO_QUEUE_CLOSE;
-	}
-	
-	printf("event from fd %i\n", self->fd);
+/*
+ * Compares minor an major number of fd and path.
+ *
+ * Returns:
+ * -1 on error
+ *  1 if numbers are the same
+ *  0 if minor or major number are different
+ */
+int evf_input_compare(int fd, const char *path);
 
-	evf_input_print(stdout, " *** ", &ev);
+/*
+ * Prints human readable decompostion of input_event
+ * into file.
+ */
+void evf_input_print(FILE *file, const char *prefix, struct input_event *ev);
 
-	return EVF_IO_QUEUE_OK;
-}
+/*
+ * Event type to string.
+ */
+const char *evf_input_type(struct input_event *ev);
 
-static void device_plugged(const char *dev)
-{
-	int fd;
+/*
+ * Event code to string.
+ */
+const char *evf_input_code(struct input_event *ev);
 
-	printf("device %s plugged.\n", dev);
+/*
+ * Event value to string.
+ */
+const char *evf_input_value(struct input_event *ev);
 
-	fd = open(dev, O_RDONLY);
+/*
+ * Grab input device. Returns 0 on success -ERROR on failure.
+ *
+ * !!! WARNING !!!
+ *
+ * Grabbed input device sends events only to you (caller of grab ioctl), 
+ * so if you grab your keyboard it will suddenly stop sending events to xserver.
+ * Anyway you have been warned.
+ */
+int evf_input_grab(int fd);
 
-	if (fd < 0) {
-		perror("Can't open device");
-		return;
-	}
+/*
+ * Ungrab input device. Returns 0 on success -ERROR on failure.
+ *
+ */
+int evf_input_ungrab(int fd);
 
-	evf_io_queue_add(queue, fd, read_event, NULL);
-}
 
-static int hotplug_rescan(struct evf_io_queue_memb *self
-                          __attribute__ ((unused)))
-{
-	evf_hotplug_rescan();
-	
-	return 0;
-}
-
-int main(void)
-{
-	int fd;
-	queue = evf_io_queue_new();
-
-	if (queue == NULL) {
-		fprintf(stderr, "Can't allocate io queue.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	if ((fd = evf_hotplug_init(device_plugged, NULL)) < 0) {
-		fprintf(stderr, "Can't initalize hotplug: %s\n",
-		        strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-
-	/* add hotplug into queue */
-	if (!evf_io_queue_add(queue, fd, hotplug_rescan, NULL)) {
-		fprintf(stderr, "Can't allocate hotplug queue handler.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	printf("Sleeping in io queue for events.\n");
-
-	for (;;)
-		evf_io_queue_wait(queue, NULL);
-	
-	return 0;
-}
-
+#endif /* __EVF_INPUT_H__ */

@@ -85,7 +85,7 @@ void evf_line_process_event(struct evf_filter *root, struct input_event *ev);
  * Free all memory allocated in filter line. Also close file descriptor
  * associated with line. Returns pointer to void *data.
  */
-void *evf_line_free(struct evf_line *line);
+void *evf_line_destroy(struct evf_line *line);
 
 /*
  * Print filter names from filter line to stdout, use for debugging purpuses

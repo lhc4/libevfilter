@@ -35,7 +35,6 @@
 #include <SDL.h>
 #include <SDL_gfxPrimitives.h>
 #include "evfilter.h"
-#include "linux_input.h"
 
 #include "sdl_utils.h"
 

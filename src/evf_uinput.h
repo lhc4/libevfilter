@@ -20,57 +20,24 @@
  ******************************************************************************/
 
 /*
-  
-  This is catch all include file. After including this, you can use all functions
-  that are meant to be used from outside this library.
+
+  Kernel user input library.
 
  */
 
-#ifndef __EVFILTER_H__
-#define __EVFILTER_H__
+#ifndef __EVF_UINPUT_H__
+#define __EVF_UINPUT_H__
+
+#include <linux/uinput.h>
 
 /*
- * Basic linux input interface.
+ * Returns file descriptor or -1 in case of failure.
  */
-#include <linux/input.h>
-
-/*  Error reporting, functions to translate error codes to error messages. */
-#include "evf_err.h"
+int evf_uinput_create(struct uinput_user_dev *ui_dev);
 
 /*
- * Basic filter interface. Can load filters, destroy them, get parameters.
- *
- * NOTE: Most of the interface are low level calls, do not use unless you know
- *       what are you doing.
+ * Destroy user input.
  */
-#include "evf_filter.h"
+void evf_uinput_destroy(int fd);
 
-/* Load filters accroding to config file and returns handle to it. */
-#include "evf_loader.h"
-
-/*
- * Implements profiles. Profile is directory with special file that contains rules
- * and many more files with informations witch filters to load.
- */
-#include "evf_profile.h"
-
-/*
- * Evfilter line. High level interface, you can call just create line and
- * library looks for system wide profiles, loads filter and many more. This is
- * application preffered interface.
- */
-#include "evf_line.h"
-
-/* IO queue for file descriptor build on select() call */
-#include "evf_io_queue.h"
-
-/* Hotplug implementation. */
-#include "evf_hotplug.h"
-
-/* Linux input interface */
-#include "evf_input.h"
-
-/* Linux user input interface */
-#include "evf_uinput.h"
-
-#endif /* __EVFILTER_H__ */
+#endif /* __EVF_UINPUT_H__ */

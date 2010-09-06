@@ -33,7 +33,7 @@
 #include "evf_filter.h"
 #include "evf_err.h"
 #include "evf_profile.h"
-#include "linux_input.h"
+#include "evf_input.h"
 
 #include "evf_struct.h"
 
@@ -187,7 +187,7 @@ void evf_line_process_event(struct evf_filter *root, struct input_event *ev)
 /*
  * Free all evfilters in line
  */
-void *evf_line_free(struct evf_line *line)
+void *evf_line_destroy(struct evf_line *line)
 {
 	void *priv;
 

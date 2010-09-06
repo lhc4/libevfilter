@@ -38,4 +38,9 @@
  */
 #define EVFILTER_PROFILE_FILE "profilerc"
 
+/*
+ * Path to the user input dev file.
+ */
+#define EVFILTER_UINPUT_DEV_PATH "/dev/input/uinput"
+
 #endif /* __EVFILTER_CONFIG_H__ */

@@ -35,7 +35,6 @@
 #include <SDL.h>
 #include <SDL_gfxPrimitives.h>
 #include "evfilter.h"
-#include "linux_input.h"
 
 #define X_RES 480
 #define Y_RES 640

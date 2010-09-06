@@ -19,60 +19,59 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef __LINUX_INPUT_H__
-#define __LINUX_INPUT_H__
-
-#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <linux/uinput.h>
 #include <stdio.h>
 
-struct input_event;
+#include "config.h"
+#include "evf_uinput.h"
 
-/*
- * Returns input version, to print it use:
- *
- * printf("%d %d %d", version>>16, version>>8 & 0xff, version & 0xff);
- */
-int evf_input_get_version(int fd, int *version);
+static unsigned long long input_counter = 0;
 
-/*
- * Returns up to buf_len characters of input device name.
- */
-int evf_input_get_name(int fd, char *buf, size_t buf_len);
+int evf_uinput_create(struct uinput_user_dev *ui_dev_info)
+{
+	int fd, i, ret;
 
-/*
- * Returns up to buf_len characters of input device phys.
- */
-int evf_input_get_phys(int fd, char *buf, size_t buf_len);
+	fd = open(EVFILTER_UINPUT_DEV_PATH, O_WRONLY);
 
-/*
- * Compares minor an major number of fd and path.
- *
- * Returns:
- * -1 on error
- *  1 if numbers are the same
- *  0 if minor or major number are different
- */
-int evf_input_compare(int fd, const char *path);
+	if (fd < 0)
+		return -1;
 
-/*
- * Prints human readable decompostion of input_event
- * into file.
- */
-void evf_input_print(FILE *file, const char *prefix, struct input_event *ev);
+	/* just enable all by default */
+	ioctl(fd, UI_SET_EVBIT, EV_KEY);
+	ioctl(fd, UI_SET_EVBIT, EV_REL);
+	ioctl(fd, UI_SET_RELBIT, REL_X);
+	ioctl(fd, UI_SET_RELBIT, REL_Y);
 
-/*
- * Event type to string.
- */
-const char *evf_input_type(struct input_event *ev);
+	ioctl(fd, UI_SET_KEYBIT, BTN_MOUSE);
 
-/*
- * Event code to string.
- */
-const char *evf_input_code(struct input_event *ev);
+	for (i = 0; i < 256; i++)
+		ioctl(fd, UI_SET_KEYBIT, i);
 
-/*
- * Event value to string.
- */
-const char *evf_input_value(struct input_event *ev);
+	ret = write(fd, ui_dev_info, sizeof (*ui_dev_info));
 
-#endif /* __LINUX_INPUT_H__ */
+	if (ret != sizeof (*ui_dev_info)) {
+		close(fd);
+		return -2;
+	}
+
+	/* create uinput device */
+	ret = ioctl(fd, UI_DEV_CREATE);
+
+	if (ret != 0) {
+		close(fd);
+		return -3;
+	}
+
+	return fd;
+}
+
+void evf_uinput_destroy(int fd)
+{
+	ioctl(fd, UI_DEV_DESTROY);
+	close(fd);
+}

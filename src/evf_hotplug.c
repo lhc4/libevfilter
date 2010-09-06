@@ -27,6 +27,7 @@
 #include <dirent.h>
 #include <sys/inotify.h>
 
+#include "evf_io_queue.h"
 #include "evf_hotplug.h"
 
 #define EVF_DEV_PATH "/dev/input/"

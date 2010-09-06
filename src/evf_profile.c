@@ -30,7 +30,7 @@
 #include "evf_loader.h"
 #include "evf_err.h"
 #include "evf_profile.h"
-#include "linux_input.h"
+#include "evf_input.h"
 
 /* 
  * suppose input device names are short enough

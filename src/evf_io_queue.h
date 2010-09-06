@@ -100,4 +100,6 @@ void evf_io_queue_rem(struct evf_io_queue *queue, int fd);
  */
 unsigned int evf_io_queue_get_count(struct evf_io_queue *queue);
 
+#define EVF_IO_QUEUE_GET_PRIV(queue, type) ((type)(queue)->priv)
+
 #endif /* __EVF_IO_QUEUE_H__ */
