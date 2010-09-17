@@ -35,6 +35,9 @@
 
 #include "evfilter.h"
 
+#include "evfd_msg.h"
+#include "evfd_lock.h"
+
 static struct evf_io_queue *queue;
 
 static void input_commit(struct input_event *ev, void *data)
@@ -86,7 +89,8 @@ static void device_plugged(const char *dev)
 	if (our_input_device(dev))
 		return;
 
-	fprintf(stderr, "Trying to create input line for %s.\n", dev);
+	evfd_msg(EVFD_NOTICE, "Trying to create input line for %s.", dev);
+
 	/*
 	 * Create new input device for the other end of input line.
 	 */
@@ -97,9 +101,9 @@ static void device_plugged(const char *dev)
 	fd = evf_uinput_create(&dev_info);
 
 	if (fd < 0) {
-		fprintf(stderr, "evf_uinput_create() failed\n"
-		                "Do you have kernel capable of uinput and "
-				"rights to write /dev/input/uinput?\n");
+		evfd_msg(EVFD_ERR, "evf_uinput_create() failed."
+		                   "Do you have kernel capable of uinput and "
+		                   "rights to write /dev/input/uinput?");
 		return;
 	}
 
@@ -114,13 +118,13 @@ static void device_plugged(const char *dev)
 	line = evf_line_create(dev, input_commit, (void*)fd, 0, &err, 0);
 
 	if (line == NULL) {
-		/* no filter configured for this inpud device */
+		/* no filter configured for this input device */
 		if (err.type == evf_ok) {
-			fprintf(stderr, "No evfilter configuration found.\n");
+			evfd_msg(EVFD_NOTICE, "No evfilter configuration found.");
 			evf_uinput_destroy(fd);
 			return;
 		} else {
-			evf_err_print(&err);
+			evf_err_print(&err); //TODO
 			evf_uinput_destroy(fd);
 			return;
 		}
@@ -128,17 +132,17 @@ static void device_plugged(const char *dev)
 
 	/* we have line add it into the queue */
 	if (!evf_io_queue_add(queue, evf_line_fd(line), line_data, line)) {
-		fprintf(stderr, "Failed to add input line (%s) to io queue.\n",
-		        dev);
+		evfd_msg(EVFD_ERR, "Failed to add input line (%s) to io queue.",
+		         dev);
 		evf_uinput_destroy(fd);
 		evf_line_destroy(line);
 		return;
 	}
 
 	if ((ret = evf_input_grab(evf_line_fd(line))) != 0)
-		fprintf(stderr, "Failed to grab device %i.\n", ret);
+		evfd_msg(EVFD_ERR, "Failed to grab device (%i).", ret);
 
-	fprintf(stderr, "Evfilter line for %s has been created.\n", dev);
+	evfd_msg(EVFD_NOTICE, "Evfilter line for %s has been created.", dev);
 }
 
 /*
@@ -164,8 +168,14 @@ int main(int argc, char *argv[])
 {
 	int fd;
 	struct evf_io_queue_memb *i;
+
+	evfd_msg_init("evfd");
 	
-	/* register handler */
+	/* if there is evfd allready running exit */
+	if (!evfd_try_lock())
+		return 1;
+
+	/* register handlers */
 	signal(SIGQUIT, sighandler);
 	signal(SIGTERM, sighandler);
 	signal(SIGINT, sighandler);
@@ -174,21 +184,21 @@ int main(int argc, char *argv[])
 	queue = evf_io_queue_new();
 
 	if (queue == NULL) {
-		fprintf(stderr, "Can't allocate io queue.\n");
+		evfd_msg(EVFD_ERR, "Can't allocate io queue.");
 		return 1;
 	}
 
 	/* initalize hotplug input device watching */
 	if ((fd = evf_hotplug_init(device_plugged, NULL)) < 0) {
-		fprintf(stderr, "Can't initalize hotplug: %s.\n",
-		        strerror(errno));
+		evfd_msg(EVFD_ERR, "Can't initalize hotplug: %s.",
+		         strerror(errno));
 		evf_io_queue_destroy(queue, 0);
 		return 1;
 	}
 	
 	/* create hotplug handler */
 	if (!evf_io_queue_add(queue, fd, hotplug_data, NULL)) {
-		fprintf(stderr, "Can't allocate hotplug queue handler.\n");
+		evfd_msg(EVFD_ERR, "Can't allocate hotplug queue handler.");
 		evf_io_queue_destroy(queue, 0);
 		return 1;
 	}
@@ -196,7 +206,7 @@ int main(int argc, char *argv[])
 	while (looping)
 		evf_io_queue_wait(queue, NULL);
 
-	fprintf(stderr, "Got signal, exitting ...\n");
+	evfd_msg(EVFD_NOTICE, "Got signal, exitting ...");
 
 	/* cleanup */	
 	EVF_IO_QUEUE_MEMB_LOOP(queue, i) {
@@ -210,6 +220,10 @@ int main(int argc, char *argv[])
 			evf_uinput_destroy(fd);	
 		}
 	}
+
+	evfd_msg(EVFD_INFO, "Exitting");
+	evfd_release_lock();
+	evfd_msg_exit();
 
 	return 0;
 }
