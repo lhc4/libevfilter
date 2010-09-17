@@ -49,7 +49,7 @@ int evf_uinput_create(struct uinput_user_dev *ui_dev_info)
 
 	ioctl(fd, UI_SET_KEYBIT, BTN_MOUSE);
 
-	for (i = 0; i < 256; i++)
+	for (i = 0; i < KEY_MAX; i++)
 		ioctl(fd, UI_SET_KEYBIT, i);
 
 	ret = write(fd, ui_dev_info, sizeof (*ui_dev_info));
