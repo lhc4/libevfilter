@@ -105,6 +105,11 @@ void evfd_msg(enum evfd_msg_t type, const char *fmt, ...)
 	}
 }
 
+void evfd_msg_verbosity_set(enum evfd_msg_t level)
+{
+	evfd_verbosity = level;
+}
+
 void evfd_msg_output(enum evfd_msg_out output, bool on_off)
 {
 

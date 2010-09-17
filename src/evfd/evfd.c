@@ -37,6 +37,7 @@
 
 #include "evfd_msg.h"
 #include "evfd_lock.h"
+#include "evfd.h"
 
 static struct evf_io_queue *queue;
 
@@ -168,9 +169,28 @@ int main(int argc, char *argv[])
 {
 	int fd;
 	struct evf_io_queue_memb *i;
+	int opt, daemonize = 1;
 
 	evfd_msg_init("evfd");
-	
+
+	while ((opt = getopt(argc, argv, "vdh")) != -1) {
+		switch (opt) {
+			case 'h':
+			 	puts(evfd_help);
+				return 0;
+			break;
+			case 'v':
+				evfd_msg_verbosity_set(EVFD_DEBUG);
+			break;
+			case 'd':
+				daemonize = 0;
+			break;
+			default:
+				puts(evfd_help);
+				return 1;
+		}
+	}
+
 	/* if there is evfd allready running exit */
 	if (!evfd_try_lock())
 		return 1;
@@ -201,6 +221,17 @@ int main(int argc, char *argv[])
 		evfd_msg(EVFD_ERR, "Can't allocate hotplug queue handler.");
 		evf_io_queue_destroy(queue, 0);
 		return 1;
+	}
+
+	/* initalization done, dameonize */
+	if (daemonize) {
+		evfd_msg_output(EVFD_SYSLOG, true);
+		if (daemon(0,0) == -1) {
+			evfd_msg(EVFD_ERR, "daemon() call failed: %s",
+			         strerror(errno));
+			return 1;
+		}
+		evfd_msg_output(EVFD_STDERR, false);
 	}
 
 	while (looping)

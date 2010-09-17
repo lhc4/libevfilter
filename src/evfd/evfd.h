@@ -21,52 +21,33 @@
 
 /*
   
-  Error messages redirecting.
+  Constants.
 
  */
 
-#ifndef __EVFD_MSG_H__
-#define __EVFD_MSG_H__
+#ifndef __EVFD_H__
+#define __EVFD_H__
 
-#include <stdbool.h>
+static char *evfd_help = 
+	"\n.................. -=[ EVFD ]=- .................\n"
+	"                                                 \n"
+	"  -- daemon for modifiying input events          \n"
+	"                                                 \n"
+	" parameters                                      \n"
+	" ----------                                      \n"
+	" -v  verbose output                              \n"
+	" -d  do not dameonize                            \n"
+	" -h  print this help                             \n"
+	"                                                 \n"
+	" description                                     \n"
+	" -----------                                     \n"
+	" Evfd looks for evfilter system configuration in \n"
+	" /etc/evfilter/ and creates virtual input devices\n"
+	" and routes filtered events from grabbed devices \n"
+	" into them.                                      \n"
+	"                                                 \n"
+	" written by && bugs to                           \n"
+	" ---------------------                           \n"
+	" Cyril Hrubis metan@ucw.cz                       \n\n";
 
-enum evfd_msg_t {
-	EVFD_ERR,
-	EVFD_WARN,
-	EVFD_NOTICE,
-	EVFD_INFO,
-	EVFD_DEBUG,
-	EVFD_MAX = EVFD_DEBUG,
-};
-
-enum evfd_msg_out {
-	EVFD_STDERR,
-	EVFD_SYSLOG,
-};
-
-/*
- * Initalize messages.
- */
-void evfd_msg_init(char *process_name);
-
-/*
- * Prints message.
- */
-void evfd_msg(enum evfd_msg_t type, const char *fmt, ...);
-
-/*
- * Turn on/off output.
- */
-void evfd_msg_output(enum evfd_msg_out output, bool on_off);
-
-/*
- * Set verbosity level.
- */
-void evfd_msg_verbosity_set(enum evfd_msg_t level);
-
-/*
- * Deinitalize messages.
- */
-void evfd_msg_exit(void);
-
-#endif /* __EVFD_MSG_H__ */
+#endif /* __EVFD_H__ */
