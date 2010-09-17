@@ -15,8 +15,13 @@ all: $(BINARY)
 	$(CC) $(CFLAGS) $< -o $@
 
 install:
-	install -m 775 $(BINARIES) /usr/sbin/
+	install -m 775 $(BINARY) /usr/sbin/
 
 clean:
 	rm -rf $(BINARY) *.o
 	
+evfd_lock.o: evfd_lock.c evfd_lock.h evfd_msg.h
+evfd_msg.o: evfd_msg.c evfd_msg.h
+evfd.o: evfd.c evfd_msg.h evfd_lock.h evfd.h
+evfd_lock.o: evfd_lock.c evfd_lock.h evfd_msg.h
+evfd_msg.o: evfd_msg.c evfd_msg.h
