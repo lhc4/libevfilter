@@ -21,115 +21,105 @@
 
 /*
  *
- * Evfilter abs2rel:
- *
- * Translates absolute events to relative accordingly to difference of
- * abs coordinates.
+ * Evfilter rel2scroll:
  *
  * parameters:
  *
- * none
+ * TriggerButton -- button that switch between scrolling and pointer movements.
+ * 
  */
 
 #include <stdlib.h>
 #include <linux/input.h>
 #include <errno.h>
-//#include <limits.h>
+#include <stdbool.h>
 
 #include "evf_struct.h"
 #include "evf_priv.h"
 
-#define INCIF(x) ((x) < 2 ? ((x)++) : (x));
-
-struct abs2rel {
-	int xstate;
-	int ystate;
-	int relx;
-	int rely;
-	int last_absx;
-	int last_absy;
+struct rel2scroll {
+	int x;
+	int y;
+	int  trigger_btn;
+	bool trigger_on;
+	bool eat_next_sync;
 };
 
 static void modify(struct evf_filter *self, struct input_event *ev)
 {
-	struct abs2rel *data = (struct abs2rel*) self->data;
+	struct rel2scroll *data = (void*) self->data;
 
-	/* flush what we have */
-	if (ev->type == EV_SYN) {
-		
-		if (data->xstate == 2) {
-			ev->code  = REL_X;
-			ev->value = data->relx;
-			self->next->modify(self->next, ev);
-		}
-
-		if (data->ystate == 2) {
-			ev->code  = REL_Y;
-			ev->value = data->rely;
-			self->next->modify(self->next, ev);
-		}
-	
-		ev->type  = EV_SYN;
-		ev->value = 0;
-		self->next->modify(self->next, ev);
+	if (ev->type == EV_SYN && data->eat_next_sync) {
+		data->eat_next_sync = false;
+		return;
 	}
 
-	if (ev->type == EV_ABS)
-		switch (ev->code) {
-			case ABS_X:
-				data->relx = ev->value - data->last_absx;
-				data->last_absx = ev->value;
-				INCIF(data->xstate);
-			break;
-			case ABS_Y:
-				data->rely = ev->value - data->last_absy;
-				data->last_absy = ev->value;
-				INCIF(data->ystate);
-			break;
-			case ABS_PRESSURE:
-				/* pen up */
-				if (ev->value == 0) {
-					data->xstate = 0;
-					data->ystate = 0;
-				}
-			break;
-	} else
-		self->next->modify(self->next, ev);
+	data->eat_next_sync = false;
+
+	if (ev->type == EV_KEY && ev->code == data->trigger_btn) {
+		
+		if (ev->value == 0)
+			data->trigger_on = false;
+		else
+			data->trigger_on = true;
+
+		data->eat_next_sync = true;
+		return;
+	}
+
+	if (data->trigger_on) {
+		if (ev->type == EV_REL) {
+			switch (ev->code) {
+				case REL_X:
+					ev->code = REL_HWHEEL;
+				break;
+				case REL_Y:
+					ev->code = REL_WHEEL;
+				break;
+			}
+		}
+	}
+
+	self->next->modify(self->next, ev);
 }
 
-struct evf_filter *evf_abs2rel_alloc(void)
+struct evf_filter *evf_rel2scroll_alloc(int trigger_btn)
 {
-	struct evf_filter *evf = malloc(sizeof (struct evf_filter) + sizeof (struct abs2rel));
-	struct abs2rel *data;
+	struct evf_filter *evf = malloc(sizeof (struct evf_filter) +
+	                                sizeof (struct rel2scroll));
+	struct rel2scroll *data;
 
 	if (evf == NULL)
 		return NULL;
 
 	evf->modify = modify;
 	evf->free   = NULL;
-	evf->name   = "Abs2Rel";
-	evf->desc   = "Converts absolute possition events to relative.";
+	evf->name   = "Rel2Scroll";
+	evf->desc   = "Converts relative events into scroll events.";
 
-	data = (struct abs2rel*) evf->data;
+	data = (void*) evf->data;
 	
-	data->xstate = 0;
-	data->ystate = 0;
+	data->trigger_on    = false;
+	data->eat_next_sync = false;
+	data->trigger_btn   = trigger_btn;
 
 	return evf;
 }
 
-static struct evf_param abs2rel_params[] = {
-	{NULL, 0, NULL},
+static struct evf_param rel2scroll_params[] = {
+	{"TriggerButton", evf_key, NULL},
+	{NULL,                  0, NULL},
 };
 
-struct evf_filter *evf_abs2rel_creat(char *params, union evf_err *err)
+struct evf_filter *evf_rel2scroll_creat(char *params, union evf_err *err)
 {
 	struct evf_filter *evf;
+	int trigger_btn;
 
-	if (evf_load_params(err, params, abs2rel_params) == -1)
+	if (evf_load_params(err, params, rel2scroll_params, &trigger_btn) == -1)
 		return NULL;
 	
-	evf = evf_abs2rel_alloc();
+	evf = evf_rel2scroll_alloc(trigger_btn);
 
 	if (evf == NULL) {
 		err->type          = evf_errno;

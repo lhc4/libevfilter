@@ -45,6 +45,7 @@ static const char *evf_filters[] =
  "Abs2Rel"           , 
  "Btn2Rel"           , 
  "Kalman"            , 
+ "Rel2Scroll"        , 
  NULL                ,
 };
 
@@ -62,6 +63,7 @@ static struct evf_filter* (*evf_creat[])(char *, union evf_err *) =
  evf_abs2rel_creat             ,
  evf_btn2rel_creat             ,
  evf_kalman_creat              ,
+ evf_rel2scroll_creat          ,
 };
 
 /*
