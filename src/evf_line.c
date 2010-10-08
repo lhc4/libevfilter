@@ -132,7 +132,7 @@ struct evf_line *evf_line_create(const char *input_device,
 
 	/* load system profiles */
 	line->begin = begin;
-	line->end   = evf_filters_last(line->begin);
+	line->end   = evf_filters_last(begin);
 
 	fcommit = evf_commit_alloc(commit, priv);
 
@@ -160,10 +160,9 @@ struct evf_line *evf_line_create(const char *input_device,
 	else 
 		fbarrier       = fcommit;
 
-	if (line->end == NULL) {
-		line->begin = fbarrier;
-		line->end   = fbarrier;
-	} else
+	if (line->begin == NULL)
+		line->begin     = fbarrier;
+	else
 		line->end->next = fbarrier;
 	
 	return line;
@@ -174,9 +173,9 @@ struct evf_line *evf_line_create(const char *input_device,
  */
 void evf_line_attach_filter(struct evf_line *line, struct evf_filter *filter)
 {
-	
-	if (line->end == line->begin) {
-		filter->next    = line->end;
+	/* just commit and poissibly barrier */
+	if (line->end == NULL) {
+		filter->next    = line->begin;
 		line->begin     = filter;
 		line->end       = filter;
 	} else {
