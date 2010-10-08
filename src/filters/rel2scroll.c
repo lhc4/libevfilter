@@ -39,7 +39,9 @@
 
 struct rel2scroll {
 	int x;
+	int xmod;
 	int y;
+	int ymod;
 	int  trigger_btn;
 	bool trigger_on;
 	bool eat_next_sync;
@@ -64,6 +66,7 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 			data->trigger_on = true;
 
 		data->eat_next_sync = true;
+		
 		return;
 	}
 
@@ -71,10 +74,28 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 		if (ev->type == EV_REL) {
 			switch (ev->code) {
 				case REL_X:
-					ev->code = REL_HWHEEL;
+					data->x += ev->value;
+					
+					if (data->x / data->xmod) {
+						ev->value = data->x / data->xmod;
+						data->x = data->x % data->xmod;
+						ev->code = REL_HWHEEL;
+					} else {
+						data->eat_next_sync = true;
+						return;
+					}
 				break;
 				case REL_Y:
-					ev->code = REL_WHEEL;
+					data->y += ev->value;
+					
+					if (data->y / data->ymod) {
+						ev->value = data->y / data->ymod;
+						data->y = data->y % data->ymod;
+						ev->code = REL_WHEEL;
+					} else {
+						data->eat_next_sync = true;
+						return;
+					}
 				break;
 			}
 		}
@@ -83,7 +104,7 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 	self->next->modify(self->next, ev);
 }
 
-struct evf_filter *evf_rel2scroll_alloc(int trigger_btn)
+struct evf_filter *evf_rel2scroll_alloc(int trigger_btn, int xmod, int ymod)
 {
 	struct evf_filter *evf = malloc(sizeof (struct evf_filter) +
 	                                sizeof (struct rel2scroll));
@@ -101,6 +122,10 @@ struct evf_filter *evf_rel2scroll_alloc(int trigger_btn)
 	
 	data->trigger_on    = false;
 	data->eat_next_sync = false;
+	data->x             = 0;
+	data->xmod          = xmod;
+	data->y             = 0;
+	data->ymod          = ymod;
 	data->trigger_btn   = trigger_btn;
 
 	return evf;
@@ -108,6 +133,8 @@ struct evf_filter *evf_rel2scroll_alloc(int trigger_btn)
 
 static struct evf_param rel2scroll_params[] = {
 	{"TriggerButton", evf_key, NULL},
+	{"Xmod",          evf_int, NULL},
+	{"Ymod",          evf_int, NULL},
 	{NULL,                  0, NULL},
 };
 
@@ -115,11 +142,12 @@ struct evf_filter *evf_rel2scroll_creat(char *params, union evf_err *err)
 {
 	struct evf_filter *evf;
 	int trigger_btn;
+	int xmod, ymod;
 
-	if (evf_load_params(err, params, rel2scroll_params, &trigger_btn) == -1)
+	if (evf_load_params(err, params, rel2scroll_params, &trigger_btn, &xmod, &ymod) == -1)
 		return NULL;
 	
-	evf = evf_rel2scroll_alloc(trigger_btn);
+	evf = evf_rel2scroll_alloc(trigger_btn, xmod, ymod);
 
 	if (evf == NULL) {
 		err->type          = evf_errno;
