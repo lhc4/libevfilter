@@ -30,8 +30,6 @@
 #include "config.h"
 #include "evf_uinput.h"
 
-static unsigned long long input_counter = 0;
-
 int evf_uinput_create(struct uinput_user_dev *ui_dev_info)
 {
 	int fd, i, ret;

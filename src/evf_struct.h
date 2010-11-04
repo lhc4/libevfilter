@@ -23,7 +23,7 @@
   
   Here comes struct evfilter definition, do not inlucde this file into any
   code outside of this library. To acces it's mebers use functions defined
-  in evfilter_filter.h.
+  in evf_filter.h.
   
  */
 
