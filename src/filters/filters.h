@@ -53,5 +53,7 @@ struct evf_filter* evf_abs2rel_creat(char *params, union evf_err *err);
 struct evf_filter* evf_btn2rel_creat(char *params, union evf_err *err);
 struct evf_filter* evf_kalman_creat(char *params, union evf_err *err);
 struct evf_filter* evf_rel2scroll_creat(char *params, union evf_err *err);
+struct evf_filter* evf_copy_to_handle_creat(char *params, union evf_err *err);
+struct evf_filter* evf_get_from_handle_creat(char *params, union evf_err *err);
 
 #endif /* __FILTERS_H__ */

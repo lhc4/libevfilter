@@ -20,118 +20,89 @@
  ******************************************************************************/
 
 /*
+ * Evfilter GetFromHandle:
  *
- * Evfilter abs2rel:
+ * Parameters:
  *
- * Translates absolute events to relative accordingly to difference of
- * abs coordinates.
+ * HandleName string
  *
- * parameters:
- *
- * none
+ * Note that the order of the input events may get messed up. Use barrier
+ * filters to avoid this.
  */
 
 #include <stdlib.h>
 #include <linux/input.h>
 #include <errno.h>
+#include <string.h>
 
 #include "evf_struct.h"
 #include "evf_priv.h"
+#include "evf_handle.h"
 
-#define INCIF(x) ((x) < 2 ? ((x)++) : (x));
-
-struct abs2rel {
-	int xstate;
-	int ystate;
-	int relx;
-	int rely;
-	int last_absx;
-	int last_absy;
+struct priv {
+	char name[EVF_HANDLE_MAX];
 };
 
 static void modify(struct evf_filter *self, struct input_event *ev)
 {
-	struct abs2rel *data = (struct abs2rel*) self->data;
-
-	/* flush what we have */
-	if (ev->type == EV_SYN) {
-		
-		if (data->xstate == 2) {
-			ev->code  = REL_X;
-			ev->value = data->relx;
-			self->next->modify(self->next, ev);
-		}
-
-		if (data->ystate == 2) {
-			ev->code  = REL_Y;
-			ev->value = data->rely;
-			self->next->modify(self->next, ev);
-		}
-	
-		ev->type  = EV_SYN;
-		ev->value = 0;
-		self->next->modify(self->next, ev);
-	}
-
-	if (ev->type == EV_ABS)
-		switch (ev->code) {
-			case ABS_X:
-				data->relx = ev->value - data->last_absx;
-				data->last_absx = ev->value;
-				INCIF(data->xstate);
-			break;
-			case ABS_Y:
-				data->rely = ev->value - data->last_absy;
-				data->last_absy = ev->value;
-				INCIF(data->ystate);
-			break;
-			case ABS_PRESSURE:
-				/* pen up */
-				if (ev->value == 0) {
-					data->xstate = 0;
-					data->ystate = 0;
-				}
-			break;
-	} else
-		self->next->modify(self->next, ev);
+	self->next->modify(self->next, ev);
 }
 
-struct evf_filter *evf_abs2rel_alloc(void)
+static void *filter_free(struct evf_filter *self)
 {
-	struct evf_filter *evf = malloc(sizeof (struct evf_filter) + sizeof (struct abs2rel));
-	struct abs2rel *data;
+	struct priv *priv = (struct priv*) self->data;
+
+	evf_handle_detach(priv->name);
+
+	return NULL;
+}
+
+struct evf_filter *evf_get_from_handle_alloc(const char *name)
+{
+	struct evf_filter *evf = malloc(sizeof (struct evf_filter)
+	                                + sizeof (struct priv));
+	struct evf_filter *ret = evf;
+	struct priv *priv;
 
 	if (evf == NULL)
 		return NULL;
 
-	evf->modify = modify;
-	evf->free   = NULL;
-	evf->name   = "Abs2Rel";
-	evf->desc   = "Converts absolute possition events to relative.";
+	//TODO: error propagation.
+	if (evf_handle_attach(name, &ret, modify)) {
+		free(evf);
+		return NULL;
+	}
 
-	data = (struct abs2rel*) evf->data;
-	
-	data->xstate = 0;
-	data->ystate = 0;
+	evf->modify = modify;
+	evf->free   = filter_free;
+	evf->name   = "GetFromHandle";
+	evf->desc   = "Gets events from handle.";
+
+	priv = (struct priv*) evf->data;
+
+	strncpy(priv->name, name, EVF_HANDLE_MAX);
+	priv->name[EVF_HANDLE_MAX - 1] = '\0';
 
 	return evf;
 }
 
-static struct evf_param abs2rel_params[] = {
-	{NULL, 0, NULL},
+static struct evf_param filter_params[] = {
+	{"HandleName", evf_str, NULL},
+	{NULL        ,       0, NULL}
 };
 
-struct evf_filter *evf_abs2rel_creat(char *params, union evf_err *err)
+struct evf_filter *evf_get_from_handle_creat(char *params, union evf_err *err)
 {
+	char *name;
 	struct evf_filter *evf;
 
-	if (evf_load_params(err, params, abs2rel_params) == -1)
+	if (evf_load_params(err, params, filter_params, &name) == -1)
 		return NULL;
 	
-	evf = evf_abs2rel_alloc();
-
+	evf = evf_get_from_handle_alloc(name);
+	
 	if (evf == NULL) {
-		err->type          = evf_errno;
+		err->type = evf_errno;
 		err->err_no.err_no = errno;
 	}
 

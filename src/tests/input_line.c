@@ -20,23 +20,23 @@
  ******************************************************************************/
 
 /*
- * This is example how to use evfilter line.
+ * TODO: This code is broken!
  */
 
 #include <unistd.h>
 #include <stdio.h>
 #include "evfilter.h"
+#include "evf_input.h"
 
 static void commit(struct input_event *ev, void *data)
 {
-	(void) ev;
 	(void) data;
+	evf_input_print(stdout, data, ev);
 }
 
 int main(int argc, char *argv[])
 {
 	struct evf_line   *line[100];
-	struct evf_filter *filter;
 	union  evf_err     err;
 	int i, line_idx = 0;
 	char params[] = "prefix = '' file=stdout";
@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 		
 		printf("Opening %s ... ", argv[i]);
 		
-		line[line_idx] = evf_line_create(argv[i], commit, NULL, 20, &err, 1);
+		line[line_idx] = evf_line_create(argv[i], commit, argv[i], 20, &err, 1);
 		
 		if (line[line_idx] == NULL) {
 			printf("Error creating evf_line\n");
@@ -67,12 +67,6 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	filter = evf_filter_load("dump", params, &err);
-
-	if (filter != NULL)
-		evf_line_attach_filter(line[0], filter);
-	else
-		evf_err_print(&err);
 
 	for (i = 0; i < line_idx; i++) {
 		evf_line_print(line[i]);
