@@ -48,6 +48,7 @@ static const char *evf_filters[] =
  "Rel2Scroll"        , 
  "CopyToHandle"      , 
  "GetFromHandle"     , 
+ "KeyLock"           , 
  NULL                ,
 };
 
@@ -68,6 +69,7 @@ static struct evf_filter* (*evf_creat[])(char *, union evf_err *) =
  evf_rel2scroll_creat          ,
  evf_copy_to_handle_creat      ,
  evf_get_from_handle_creat     ,
+ evf_key_lock_creat            ,
 };
 
 /*
