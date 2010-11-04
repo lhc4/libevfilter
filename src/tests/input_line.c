@@ -19,69 +19,68 @@
  *                                                                            *
  ******************************************************************************/
 
-/*
- * TODO: This code is broken!
- */
-
-#include <unistd.h>
 #include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <unistd.h>
+
 #include "evfilter.h"
 #include "evf_input.h"
 
 static void commit(struct input_event *ev, void *data)
 {
-	(void) data;
-	evf_input_print(stdout, data, ev);
+	printf("%s:\n",  (char*)data);
+        evf_input_print(stdout, "", ev);
+	printf("\n");
+}
+
+static int event_read(struct evf_io_queue_memb *self)
+{
+	evf_line_process(self->priv);
+
+	return EVF_IO_QUEUE_OK;
 }
 
 int main(int argc, char *argv[])
 {
-	struct evf_line   *line[100];
-	union  evf_err     err;
-	int i, line_idx = 0;
-	char params[] = "prefix = '' file=stdout";
+	struct evf_io_queue *queue = evf_io_queue_new();
+	struct evf_line *line;
+	union evf_err err;
+	int i;
 
 	if (argc < 2) {
-		fprintf(stderr, "usage: ./input_line /dev/input/eventX /dev/input/eventY ....\n");
-		return 1;
+		fprintf(stderr, "usage: ./%s /dev/input/eventX /dev/input/eventY ...\n", argv[0]);
+		return -1;
 	}
 
-	if (argc > 101) {
-		fprintf(stderr, "too much inputs\n");
-		return 1;
+	if (queue == NULL) {
+		fprintf(stderr, "Can't allocate io queue.\n");	
+		return -1;
 	}
 
 	for (i = 1; i < argc; i++) {
 		
 		printf("Opening %s ... ", argv[i]);
-		
-		line[line_idx] = evf_line_create(argv[i], commit, argv[i], 20, &err, 1);
-		
-		if (line[line_idx] == NULL) {
-			printf("Error creating evf_line\n");
-			evf_err_print(&err);
-			return 1;
+
+		line = evf_line_create(argv[i], commit, argv[i], 6, &err, 1); 	
+
+		if (!evf_io_queue_add(queue, evf_line_fd(line), event_read, line)) {
+			printf("Can't add filedescriptor into queue, malloc failed :(\n");
+			evf_line_destroy(line);
 		} else {
-			printf("Ok\n");
-			line_idx++;
+			printf("ok\n\n");
+			evf_line_print(line);
+			printf("\n");
 		}
 	}
 
-
-	for (i = 0; i < line_idx; i++) {
-		evf_line_print(line[i]);
-		printf("\n");
+	if (evf_io_queue_get_count(queue) == 0) {
+		fprintf(stderr, "No filed descriptors in queue, exiting...\n");
+		return 0;
 	}
 
-	/*
-	 * Poll all lines and sleep
-	 */
-	for (;;) {
-		for (i = 0; i < line_idx; i++)
-			evf_line_process(line[i]);
-		
-		usleep(1000);
-	}
+	for (;;)
+		evf_io_queue_wait(queue, NULL);
 
 	return 0;
 }
