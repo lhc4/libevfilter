@@ -39,12 +39,16 @@
 #include "evf_priv.h"
 #include "evf_handle.h"
 
+struct priv {
+	struct evf_handle *handle;
+};
+
 static void modify(struct evf_filter *self, struct input_event *ev)
 {
-	struct evf_handle *handle = (struct evf_handle*) self->data;
+	struct priv *priv = (struct priv*) self->data;
 
 	/* send event to handle */
-	evf_handle_send(handle, ev);
+	evf_handle_send(priv->handle, ev);
 	
 	/* send event to next filter */
 	self->next->modify(self->next, ev);
@@ -52,26 +56,27 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 
 static void *filter_free(struct evf_filter *self)
 {
-	struct evf_handle *handle = (struct evf_handle*) self->data;
+	struct priv *priv = (struct priv*) self->data;
 
-	evf_handle_destroy(handle);
+	evf_handle_destroy(priv->handle);
 
 	return NULL;
 }
 
 struct evf_filter *evf_copy_to_handle_alloc(const char *name)
 {
-	struct evf_filter *evf = malloc(sizeof (struct evf_filter) + sizeof (void*));
-	struct evf_handle *handle;
+	struct evf_filter *evf = malloc(sizeof (struct evf_filter)
+	                                + sizeof (struct priv));
+	struct priv *priv;
 
 	if (evf == NULL)
 		return NULL;
 
-	handle = (struct evf_handle*) evf->data;
+	priv = (struct priv*) evf->data;
 
-	handle = evf_handle_create(name);
+	priv->handle = evf_handle_create(name);
 
-	if (handle == NULL) {
+	if (priv->handle == NULL) {
 		free(evf);
 		return NULL;
 	}

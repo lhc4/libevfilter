@@ -38,6 +38,7 @@ static struct evf_handle *handle_alloc(const char *name)
 
 	new->name[EVF_HANDLE_MAX - 1] = '\0';
 	new->filter                   = NULL;
+	new->send                     = NULL;
 	new->refcount                 = 0;
 
 	new->next = handles;
