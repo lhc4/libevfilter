@@ -62,7 +62,12 @@ int main(int argc, char *argv[])
 		
 		printf("Opening %s ... ", argv[i]);
 
-		line = evf_line_create(argv[i], commit, argv[i], 6, &err, 1); 	
+		line = evf_line_create(argv[i], commit, argv[i], 6, &err, 1);
+		
+		if (line == NULL) {
+			evf_err_print(&err);
+			continue;
+		}
 
 		if (!evf_io_queue_add(queue, evf_line_fd(line), event_read, line)) {
 			printf("Can't add filedescriptor into queue, malloc failed :(\n");
