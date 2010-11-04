@@ -49,6 +49,7 @@ static const char *evf_filters[] =
  "CopyToHandle"      , 
  "GetFromHandle"     , 
  "KeyLock"           , 
+ "FilterToHandle"    , 
  NULL                ,
 };
 
@@ -70,6 +71,7 @@ static struct evf_filter* (*evf_creat[])(char *, union evf_err *) =
  evf_copy_to_handle_creat      ,
  evf_get_from_handle_creat     ,
  evf_key_lock_creat            ,
+ evf_filter_to_handle_creat    ,
 };
 
 /*

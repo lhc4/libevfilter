@@ -27,6 +27,7 @@
  */
 enum evf_param_t {
 	evf_key = 0, /* see keys.h             */
+	evf_evtype,  /* event type             */
 	evf_keys,    /* field of keys          */
 	evf_int,     /* just number            */
 	evf_float,   /* float                  */

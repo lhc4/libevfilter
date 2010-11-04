@@ -238,6 +238,31 @@ static int evfilter_load_key(char *str, int *key)
 }
 
 /*
+ * String int event type.
+ */
+static char *evtypes[] = {
+	"EventSyn",
+	"EventKey",
+	"EventRel",
+	"EventAbs",
+	"EventMsc",
+	NULL,
+};
+
+static int evfilter_load_evtype(char *str, int *evtype)
+{
+	int i;
+
+	for (i = 0; evtypes[i] != NULL; i++)
+		if (!strcasecmp(evtypes[i], str)) {
+			*evtype = i;
+			return 0;
+		}
+
+	return -1;
+}
+
+/*
  * Prepares name from string. It's string ended with white-spaces or '='.
  *
  * Following examples are correct:
@@ -435,6 +460,18 @@ int evf_load_params(union evf_err *err, char *cfg, struct evf_param params[],
 				if (evfilter_load_int(err, values[i],
 				    va_arg(list, int*), &params[i]))
 					return -1;
+			break;
+			case evf_evtype:
+				if (evfilter_load_evtype(values[i],
+				    va_arg(list, int*))) {
+					err->type        = evf_errpar;
+					err->param.etype = evf_einval;
+					err->param.ptype = evf_evtype;
+					err->param.name  = params[i].name;
+					err->param.value = values[i];
+
+					return -1;
+				}
 			break;
 			case evf_key:
 				if (evfilter_load_key(values[i],
