@@ -25,51 +25,77 @@
  * filter: KeySubstitute
  *
  * parameters;
- * field of keys
- * field of keys
- *
+ * key1
+ * key2
  */
 
 #include <stdlib.h>
 #include <linux/input.h>
+#include <errno.h>
 
+#include "evf_struct.h"
 #include "evf_priv.h"
+#include "evf_handle.h"
 
-struct key_substitute {
-	int *from;
-	int *to;
+struct priv {
+	int key_from;
+	int key_to;
 };
 
 static void modify(struct evf_filter *self, struct input_event *ev)
 {
-	int i;
-	int *keys = (int*) self->data;
+	struct priv *priv = (struct priv*) self->data;
 
-	if (ev->type == EV_KEY)
-		for (i = 0; i < keys[0]; i++)
-			if (ev->code == keys[2*i+1]) {
-				ev->code = keys[2*i+2];
-				break;
-			}
-	
+	if (ev->type == EV_KEY && ev->code == priv->key_from)
+		ev->code = priv->key_to;
+
 	self->next->modify(self->next, ev);
 }
 
-struct evfilter *evf_key_substitute_alloc(int *from, int *to)
+struct evf_filter *evf_key_substitute_alloc(int key_from, int key_to)
 {
-	struct evf_filter *evf = malloc(sizeof (struct evf_filter) + sizeof (struct key_substitute));
-	struct key_substitute *tmp;
+	struct evf_filter *evf = malloc(sizeof (struct evf_filter) +
+	                                sizeof (struct priv));
+	struct priv *priv;
 
 	if (evf == NULL)
 		return NULL;
 
-	tmp = (struct key_substitute*) evf->data;
-
-	tmp[0] = count;
-	memcpy(tmp + 1, keys, 2 * count * sizeof (int));
+	priv = (struct priv*) evf->data;
 
 	evf->modify = modify;
+	evf->free   = NULL;
 	evf->name   = "KeySubstitute";
+	evf->desc   = "Substitute one key code for another";
+
+	priv = (struct priv*) evf->data;
+
+	priv->key_from = key_from;
+	priv->key_to   = key_to;
 
 	return evf;
+}
+
+static struct evf_param filter_params[] = {
+	{"KeyFrom", evf_key, NULL},
+	{"KeyTo"  , evf_key, NULL},
+	{NULL     ,       0, NULL}
+};
+
+struct evf_filter *evf_key_substitute_creat(char *params, union evf_err *err)
+{
+	struct evf_filter *evf;
+	int key_from, key_to;
+
+        if (evf_load_params(err, params, filter_params, &key_from, &key_to) == -1)
+                return NULL;
+
+        evf = evf_key_substitute_alloc(key_from, key_to);
+
+	if (evf == NULL) {
+                err->type = evf_errno;
+                err->err_no.err_no = errno;
+        }
+
+        return evf;
 }

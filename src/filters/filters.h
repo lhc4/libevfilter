@@ -57,5 +57,6 @@ struct evf_filter* evf_copy_to_handle_creat(char *params, union evf_err *err);
 struct evf_filter* evf_get_from_handle_creat(char *params, union evf_err *err);
 struct evf_filter* evf_key_lock_creat(char *params, union evf_err *err);
 struct evf_filter* evf_filter_to_handle_creat(char *params, union evf_err *err);
+struct evf_filter* evf_key_substitute_creat(char *params, union evf_err *err);
 
 #endif /* __FILTERS_H__ */
