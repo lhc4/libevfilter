@@ -84,9 +84,11 @@ static pid_t load_pid(void)
 
 	if (fscanf(f, "%llu", &i) != 1) {
 		evfd_msg(EVFD_ERR, "Invalid pidfile format, expected number.");
+		fclose(f);
 		return 0;
 	}
 
+	fclose(f);
 	return i;
 }
 

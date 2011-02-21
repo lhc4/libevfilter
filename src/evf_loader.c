@@ -136,16 +136,14 @@ struct evf_filter *evf_load_filters(const char *path, union evf_err *err)
 	do  {
 		if (get_filter_name(config, filter, 256) != 0) {
 			//TOOD: syntax error, expecting FilterName, fill err
-			evf_filters_free(filters);
 			printf("evf_load_filter: get_filter_name ERR\n");
-			return NULL;
+			goto err;
 		}
 		
 		if (get_filter_params(config, params, 4096) != 0) {
 			//TODO: eof while looking for EndFilter, fill err
-			evf_filters_free(filters);	
 			printf("evf_load_filter: get_filter_params ERR\n");
-			return NULL;
+			goto err;
 		}
 		
 		//printf("FilterName ***%s***\n Params ***%s***\n",
@@ -156,10 +154,8 @@ struct evf_filter *evf_load_filters(const char *path, union evf_err *err)
 		/*
 		 * Error loading filter, err is filled from evf_load_filter.
 		 */
-		if (tmp == NULL) {
-			evf_filters_free(filters);	
-			return NULL;
-		}
+		if (tmp == NULL)
+			goto err;
 		
 		/*
 		 * Add filter into linked list
@@ -179,7 +175,12 @@ struct evf_filter *evf_load_filters(const char *path, union evf_err *err)
 	} while (!feof(config));
 	
 	err->type = evf_ok;
+	fclose(config);
 	return filters;
+err:
+	evf_filters_free(filters);	
+	fclose(config);
+	return NULL;
 }
 
 /*

@@ -169,6 +169,7 @@ struct evf_filter *evf_load_profile(const char *path, int fd,
 					 */
 					if (err->type != evf_ok) {
 						evf_filters_free(filters);
+						fclose(profile);
 						return NULL;
 					}
 
@@ -197,6 +198,7 @@ struct evf_filter *evf_load_profile(const char *path, int fd,
 			break;
 	}
 
+	fclose(profile);
 	err->type = evf_ok;
 	return filters;
 }
