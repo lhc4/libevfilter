@@ -53,8 +53,10 @@ static void input_commit(struct input_event *ev, void *data)
  */
 static int line_data(struct evf_io_queue_memb *self)
 {
-	//TODO: return value from evf_line_process()
-	evf_line_process(self->priv);
+	if (evf_line_process(self->priv)) {
+		evf_line_destroy(self->priv);
+		return EVF_IO_QUEUE_REM;
+	}
 	
 	return EVF_IO_QUEUE_OK;
 }
