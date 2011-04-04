@@ -106,7 +106,7 @@ static void device_plugged(const char *dev)
 	if (fd < 0) {
 		evfd_msg(EVFD_ERR, "evf_uinput_create() failed."
 		                   "Do you have kernel capable of uinput and "
-		                   "rights to write /dev/input/uinput?");
+		                   "rights to write /dev/{input/,}uinput? : %i", fd);
 		return;
 	}
 

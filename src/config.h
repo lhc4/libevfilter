@@ -41,6 +41,6 @@
 /*
  * Path to the user input dev file.
  */
-#define EVFILTER_UINPUT_DEV_PATH "/dev/input/uinput"
+extern const char *EVFILTER_UINPUT_DEV_PATHS[];
 
 #endif /* __EVFILTER_CONFIG_H__ */
