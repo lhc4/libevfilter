@@ -98,7 +98,7 @@ static void device_plugged(const char *dev)
 	 * Create new input device for the other end of input line.
 	 */
 	//TODO: do this correctly
-	memset(&dev_info, 0, sizeof (dev));
+	memset(&dev_info, 0, sizeof(dev_info));
 	strcpy(dev_info.name, "uinput device");
 
 	fd = evf_uinput_create(&dev_info);
