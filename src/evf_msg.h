@@ -25,48 +25,48 @@
 
  */
 
-#ifndef __EVFD_MSG_H__
-#define __EVFD_MSG_H__
+#ifndef __EVF_MSG_H__
+#define __EVF_MSG_H__
 
 #include <stdbool.h>
 
-enum evfd_msg_t {
-	EVFD_ERR,
-	EVFD_WARN,
-	EVFD_NOTICE,
-	EVFD_INFO,
-	EVFD_DEBUG,
-	EVFD_MAX = EVFD_DEBUG,
+enum evf_msg_t {
+	EVF_ERR,
+	EVF_WARN,
+	EVF_NOTICE,
+	EVF_INFO,
+	EVF_DEBUG,
+	EVF_MAX = EVF_DEBUG,
 };
 
-enum evfd_msg_out {
-	EVFD_STDERR,
-	EVFD_SYSLOG,
+enum evf_msg_out {
+	EVF_STDERR,
+	EVF_SYSLOG,
 };
 
 /*
  * Initalize messages.
  */
-void evfd_msg_init(char *process_name);
+void evf_msg_init(char *process_name);
 
 /*
  * Prints message.
  */
-void evfd_msg(enum evfd_msg_t type, const char *fmt, ...);
+void evf_msg(enum evf_msg_t type, const char *fmt, ...);
 
 /*
  * Turn on/off output.
  */
-void evfd_msg_output(enum evfd_msg_out output, bool on_off);
+void evf_msg_output(enum evf_msg_out output, bool on_off);
 
 /*
  * Set verbosity level.
  */
-void evfd_msg_verbosity_set(enum evfd_msg_t level);
+void evf_msg_verbosity_set(enum evf_msg_t level);
 
 /*
  * Deinitalize messages.
  */
-void evfd_msg_exit(void);
+void evf_msg_exit(void);
 
-#endif /* __EVFD_MSG_H__ */
+#endif /* __EVF_MSG_H__ */
