@@ -23,7 +23,7 @@
 #define __SDL_UTILS_H__
 
 #include "sdl_utils.h"
-#include <SDL_gfxPrimitives.h>
+#include <SDL/SDL_gfxPrimitives.h>
 
 #define CHAR_W 8
 #define CHAR_H 8

@@ -23,7 +23,7 @@
 #define __SDL_UTILS_H__
 
 #include <stdint.h>
-#include <SDL.h>
+#include <SDL/SDL.h>
 
 struct sdl_scroll_buf;
 

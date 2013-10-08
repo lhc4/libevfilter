@@ -7,10 +7,10 @@ BINARIES=param_loader load_all input_line draw io_queue hotplug hotplug pointer_
 all: $(BINARIES)
 
 draw: draw.c sdl_utils.c sdl_utils.h
-	$(CC) $(CFLAGS) `sdl-config --static-libs --cflags` -lSDL_gfx draw.c sdl_utils.c -o draw
+	$(CC) $(CFLAGS) `sdl-config --static-libs --cflags` -lSDL_gfx -lSDL draw.c sdl_utils.c -o draw
 	
 pointer_test: pointer_test.c
-	$(CC) $(CFLAGS) `sdl-config --static-libs --cflags` -lSDL_gfx pointer_test.c -o pointer_test
+	$(CC) $(CFLAGS) `sdl-config --static-libs --cflags` -lSDL_gfx -lSDL pointer_test.c -o pointer_test
 
 %: %.c
 	$(CC) $(CFLAGS) $< -o $@

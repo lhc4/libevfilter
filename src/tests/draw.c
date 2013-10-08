@@ -32,8 +32,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <limits.h>
-#include <SDL.h>
-#include <SDL_gfxPrimitives.h>
+#include <SDL/SDL.h>
+#include <SDL/SDL_gfxPrimitives.h>
 #include "evfilter.h"
 
 #include "sdl_utils.h"
