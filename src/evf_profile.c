@@ -71,7 +71,7 @@ static int check_for_matching_rule(int fd, const char *type, const char *value)
 	/* Physical device, eg. port */
 	if (!strcasecmp("Phys", type)) {
 		
-		if (evf_input_get_name(fd, str_buf, STR_MAX) < 0)
+		if (evf_input_get_phys(fd, str_buf, STR_MAX) < 0)
 			return -2;
 
 		return !strcmp(str_buf, value);
