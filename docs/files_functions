@@ -19,6 +19,7 @@ evf_filter.c : list of filters and their params
 
 evf_func.c : util functions
 	evf_eat_spaces() : skips spaces from beginning
+	evf_read_line_preprocess() : reads lines from file, skips comment / empty lines
 
 evf_handle.c : list of ( handle, filter, event callback )
 	static struct evf_handle *handles : list of handles

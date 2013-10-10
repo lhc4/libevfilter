@@ -44,7 +44,7 @@ static int evf_msg_t_levels[] = {
 };
 
 /* messages verbosity */
-static enum evf_msg_t evf_verbosity = EVF_NOTICE;
+static enum evf_msg_t evf_verbosity = EVF_INFO;
 
 /* messages sinks */
 static bool evf_stderr = true;

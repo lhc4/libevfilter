@@ -92,7 +92,7 @@ static void device_plugged(const char *dev)
 	if (our_input_device(dev))
 		return;
 
-	evf_msg(EVF_NOTICE, "Trying to create input line for %s.", dev);
+	evf_msg(EVF_DEBUG, "Trying to create input line for %s.", dev);
 
 	/*
 	 * Create new input device for the other end of input line.
@@ -123,7 +123,7 @@ static void device_plugged(const char *dev)
 	if (line == NULL) {
 		/* no filter configured for this input device */
 		if (err.type == evf_ok) {
-			evf_msg(EVF_NOTICE, "No evfilter configuration found.");
+			evf_msg(EVF_DEBUG, "No evfilter configuration found.");
 			evf_uinput_destroy(fd);
 			return;
 		} else {
@@ -145,7 +145,7 @@ static void device_plugged(const char *dev)
 	if ((ret = evf_input_grab(evf_line_fd(line))) != 0)
 		evf_msg(EVF_ERR, "Failed to grab device (%i).", ret);
 
-	evf_msg(EVF_NOTICE, "Evfilter line for %s has been created.", dev);
+	evf_msg(EVF_INFO, "Evfilter line for %s has been created.", dev);
 }
 
 /*
@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
 
 	evf_msg_init("evfd");
 
-	while ((opt = getopt(argc, argv, "vdh")) != -1) {
+	while ((opt = getopt(argc, argv, "vdqh")) != -1) {
 		switch (opt) {
 			case 'h':
 			 	puts(evfd_help);
@@ -183,6 +183,9 @@ int main(int argc, char *argv[])
 			break;
 			case 'v':
 				evf_msg_verbosity_set(EVF_DEBUG);
+			break;
+			case 'q':
+				evf_msg_verbosity_set(EVF_WARN);
 			break;
 			case 'd':
 				daemonize = 0;

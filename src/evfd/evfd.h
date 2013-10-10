@@ -36,6 +36,7 @@ static char *evfd_help =
 	" parameters                                      \n"
 	" ----------                                      \n"
 	" -v  verbose output                              \n"
+	" -q  quiet   output                              \n"
 	" -d  do not dameonize                            \n"
 	" -h  print this help                             \n"
 	"                                                 \n"

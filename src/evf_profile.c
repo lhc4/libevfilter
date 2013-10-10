@@ -107,6 +107,8 @@ static FILE *open_profilerc(const char *path, union evf_err *err)
 	strcpy(str_buf, path);
 	strcpy(str_buf + strlen(path), EVFILTER_PROFILE_FILE);
 
+	evf_msg( EVF_DEBUG, "Opening profile %s.", str_buf );
+
 	f = fopen(str_buf, "r");
 
 	if (f == NULL) {
