@@ -55,7 +55,7 @@ void handle_free(struct evf_handle *self)
 	if (handles == NULL)
 		return;
 
-	for (i = handles; i != NULL; i++)
+	for (i = handles; i != NULL; i = i->next)
 		if (i->next == self)
 			break;
 
