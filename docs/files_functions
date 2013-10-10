@@ -1,0 +1,168 @@
+funcname !~ /^evf_/ => static
+
+config.c
+	const char *EVFILTER_UINPUT_DEV_PATHS[] : /dev/input/uinput, /dev/uinput
+
+evf_err.c
+	evf_err_print: like perror
+
+evf_filter.c : list of filters and their params
+	static const char *evf_filters[] : lists filter names
+	static struct evf_filter* : pointers to filters
+	getfilter() : returns index of filter
+	evf_filter_load() : loads filter+params by filter's name
+	evf_filter_free() : destructor
+	evf_filters_free() : destroys a list of filters
+	evf_filters_last() : returns last filter in list
+	evf_filters_merge() : concatenates two lists
+	evf_filters_print() : prints list items to STDOUT
+
+evf_handle.c : list of ( handle, filter, event callback )
+	static struct evf_handle *handles : list of handles
+	handle_free() : remove handle from list
+	handle_lookup() : scan list by name
+	evf_handle_create() : adds new handle to list, if not yet there
+	evf_handle_destroy() : decreases usage count, removes if no filter
+	evf_handle_detach() : removes filter, removes handle if unused
+	evf_handle_attach() : sets handle / filter / event callback
+	evf_handle_send() : sends event to handle's filter
+
+evf_hotplug.c : using inotify for adding / removing /dev/input/event*
+	walk() : scans /dev/input/event* and runs dev_plug() on devices
+	evf_hotplug_init() : initializes inotify to watch device add/remove
+	evf_hotplug_rescan() : plugs / unplugs added / removed devices
+	evf_hotplug_exit() : inotify cleanup
+
+evf_input.c : getting device info, formatting events
+	evf_input_get_version() : gets device driver version
+	evf_input_get_name() : gets device name
+	evf_input_get_phys() : gets physical location
+	evf_input_compare() : compares major + minor dev number
+	print_key() : formats & prints key events
+	print_rel() : formats & prints relative events
+	print_abs() : formats & prints absolute events
+	evf_input_print() : formats & prints events
+	evf_input_type() : event type to string
+	evf_input_code() : input code to string
+	evf_input_value() : value to string (up/down/repeat/unknown/0)
+	evf_input_grab() : grab device
+	evf_input_ungrab() : release device
+
+evf_io_queue.c : list of ( file descriptor, read callback, private data ) sorted by FDs. Supports select() on FDs using the callback
+	list_insert() : inserts member into fd-sorted list
+	list_delete() : removes from list
+	evf_io_queue_new() : creates new queue
+	evf_io_queue_destroy() : destroys queue, closes file descriptors
+	evf_io_queue_wait() : uses select() on queue to wait for read, calls read callback where possible; work part of EVFD
+	evf_io_queue_add() : adds FD / read callback / priv data to the queue
+	evf_io_queue_rem() : removes FD + related from queue
+	evf_io_queue_get_count() : number of items in queue
+
+evf_line.c : list of per-device filters
+	evf_line_process() : tries to read event from FD, calls evf_line_process_event() if succeeded
+	open_input_device() : opens file, tests if it is input device (i.e. understands proper IOCTL)
+	evf_line_create() : creates the list
+	evf_line_attach_filter() : appends filter to the end of the list
+	evf_line_process_event() : sends event to the first filter, it would send it to the next etc. using modify()
+	evf_line_destroy() : frees the list items
+	evf_line_fd() : returns FD
+	evf_line_print() : prints filters to STDOUT
+
+evf_loader.c : parsing filter config files
+	eat_white_spaces() : skips spaces from beginning
+	get_filter_name() : if file starts with /^\s*FilterName./, reads rest of the line, otherwise fails	TODO: should skip empty/comment lines
+	get_filter_params() : takes file, copies out everything until 'EndFilter'
+	evf_load_filters() : tries to read FilterName sections from beginning of the file (otherwise fails), returns them in a list
+	evf_load_filters_compose() : composes path from dir and file, calls evf_load_filters()
+
+evf_msg.c : logging
+	evf_msg_init() : sets process name
+	evf_msg_stderr() : logs to STDERR
+	evf_msg_syslog() : logs to syslog
+	evf_msg() : logs to STDERR/syslog
+	evf_msg_verbosity_set() : sets verbosity threshold
+	evf_msg_output() : switches on/off logging to STDERR/syslog
+	evf_msg_exit() : does nothing
+
+evf_param.c : parsing filter config parameters
+	static const char *evf_type_names[] : type names
+	evf_get_type_name() : type number to string
+	evfilter_load_float() : strtof() with error handling
+	evfilter_load_int() : strtol(), error handling, checking limits
+	evfilter_load_file() : fopen(), support for "stdout" or "stderr"
+	evfilter_load_bool() : /^(True|Yes|On|False|No|Off)$/i or error
+	evfilter_eat_spaces() : skips spaces from beginning	TODO: looks the same as evf_loader.c:eat_white_spaces()
+	evfilter_load_key() : calls keyparser_getkey()
+	static char *evtypes[] : event type names
+	evfilter_load_evtype() : event type string to int
+	evfilter_get_name() : takes /^\s*([^\s=]+)\s*=?(.*)$/, splits to $1 and $2
+	evfilter_get_value() : cuts /^\s*'([^']+)'/, /\s*^"[^"]+)"/ or /^\s*(\S+)/ out of the string
+	evfilter_find_possition() : param name to index (or -1)
+	evfilter_count_params() : counts params in array
+	evf_load_params() : fills params from file (error when duplicate or missing), converts to requested types, checks for errors	TODO: default values, optional parameters
+
+evf_profile.c : parsing main config (profilerc)
+	check_for_matching_rule() : "Device": compares major/minor, "Name": device name, "Phys": device name, "Bits": fails (BUG)
+	open_profilerc() : compose path from directory and "profilerc", try to open 	TODO: similar to evf_load_filters_compose()
+	evf_load_system_profile() : calls evf_load_profile() on main profile dir
+	evf_load_profile() : opens profilerc, reads sections, returns list of matching filters	TODO: preprocessing, redesign
+
+evf_uinput.c : creates new device
+	try_open() : opens files in list, returns first successful FD
+	evf_uinput_create() : opens uinput for write (/dev/input/uinput or /dev/uinput), enables events, writes there dev info, creates device
+	evf_uinput_destroy() : destroys the device, 
+
+filters/abs2rel.c
+filters/btn2rel.c
+filters/commit.c
+filters/copy_to_handle.c
+filters/dump.c
+filters/filter_to_handle.c
+filters/get_from_handle.c
+filters/kalman.c
+filters/key_lock.c
+filters/key_substitute.c
+filters/mirror.c
+filters/no_repeat.c
+filters/pressure_to_key.c
+filters/rel2scroll.c
+filters/rotate.c
+filters/scale_abs.c
+filters/speed_mod_rel.c
+filters/weighted_average_abs.c
+
+keyparser/evf_getkey.c
+	open_input_fd() : opens input device, prints name
+	main() : opens device (cmdline argument), reads input events, prints key events
+
+keyparser/key_parser.c
+	keyparser_getkey() : key name to ID
+	keyparser_getname() : key ID to name
+
+evfd/evfd.c
+	input_commit() : writes input_event to FD
+	line_data() : calls evf_line_process(), destroys line if not able to read from device
+	our_input_device() : checks if device created by EVFD
+	device_plugged() : creates input device (if not present), input line (filters), adds to IO queue (for select())
+	hotplug_data() : calls evf_hotplug_rescan()
+	sighandler() : stops looping in main() (handles QUIT, TERM, INT)
+	main() : processes cmdline, inits signal handlers / IO queue / hotplug, daemonizes, loops on evf_io_queue_wait(), cleans up
+
+evfd/evfd_lock.c : handling the PID file
+	pid_save() : writes PID to lockfile (/var/run/evfd.pid)
+	load_pid() : tries to read PID from lockfile
+	pid_is_running() : check if PID is running (/proc/<PID> exists)
+	evfd_try_lock() : checks lockfile for a running PID, creates lockfile otherwise
+	evfd_release_lock() : deletes lockfile
+
+
+tests/draw.c
+tests/hotplug.c
+tests/input_line.c
+tests/io_queue.c
+tests/load_all.c
+tests/param_loader.c
+tests/pointer_test.c
+tests/sdl_utils.c
+tests/uinput.c
+
