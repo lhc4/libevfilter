@@ -13,7 +13,7 @@ HEADERS=$(shell ls ./*.h)
 # object files
 OBJECTS=$(CSOURCES:.c=.o) 
 
-all: libevfilter.so
+all: tags libevfilter.so
 
 make_keyparser:
 	@cd keyparser && $(MAKE)
@@ -28,6 +28,10 @@ libevfilter.so: make_filters make_keyparser $(OBJECTS) $(HEADERS) $(KEYPARSER_HE
 # rules for compiling c sources
 .c.o:
 	$(CC) $(CFLAGS) -c $< -o $@
+
+# update tags on make
+tags: $(CSOURCES)
+	./mktags.sh
 
 # install
 INSTALL_HEADERS=evfilter.h evf_err.h evf_filter.h evf_hotplug.h      \

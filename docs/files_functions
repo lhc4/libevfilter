@@ -73,7 +73,7 @@ evf_line.c : list of per-device filters
 	evf_line_print() : prints filters to STDOUT
 
 evf_loader.c : parsing filter config files
-	get_filter_name() : if file starts with /^\s*FilterName./, reads rest of the line, otherwise fails	TODO: should skip empty/comment lines
+	get_filter_name() : if file starts with /^\s*FilterName./, reads rest of the line, otherwise fais; skips empty/comment lines
 	get_filter_params() : takes file, copies out everything until 'EndFilter'
 	evf_load_filters() : tries to read FilterName sections from beginning of the file (otherwise fails), returns them in a list
 	evf_load_filters_compose() : composes path from dir and file, calls evf_load_filters()
