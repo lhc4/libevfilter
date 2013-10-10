@@ -29,15 +29,8 @@
 #include "evf_filter.h"
 #include "evf_err.h"
 #include "evf_loader.h"
-
-/*
- * Just eat's all whitespaces.
- */
-static void eat_white_spaces(char **str)
-{
-	while (isspace(**str))
-		(*str)++;
-}
+#include "evf_msg.h"
+#include "evf_func.h"
 
 /*
  * Loads one line from configuration file and returns filter name.
@@ -59,19 +52,19 @@ static int get_filter_name(FILE *config, char *buf, size_t buf_len)
 
 	fscanf(config, "%4096[^\n]\n", line);
 	
-	eat_white_spaces(&line);
+	evf_eat_spaces(&line);
 
 	if (strncasecmp("FilterName", line, 10))
 		return -1;
 	
 	line += 11;
 
-	eat_white_spaces(&line);
+	evf_eat_spaces(&line);
 
 	if (*line == '=')
 		line++;
 
-	eat_white_spaces(&line);
+	evf_eat_spaces(&line);
 	
 	strncpy(buf, line, buf_len);
 	buf[buf_len - 1] = '\0';
@@ -125,6 +118,7 @@ struct evf_filter *evf_load_filters(const char *path, union evf_err *err)
 	char filter[256];
 	char params[4096];
 	struct evf_filter *filters = NULL, *last_filter, *tmp;
+	int count=1;
 
 	if (config == NULL) {
 		//TODO: context to err
@@ -150,6 +144,7 @@ struct evf_filter *evf_load_filters(const char *path, union evf_err *err)
 		//       filter, params);
 		
 		tmp = evf_filter_load(filter, params, err);
+		count ++;
 		
 		/*
 		 * Error loading filter, err is filled from evf_load_filter.
@@ -174,6 +169,7 @@ struct evf_filter *evf_load_filters(const char *path, union evf_err *err)
 
 	} while (!feof(config));
 	
+	evf_msg( EVF_INFO, "Loaded %i filters.", count );
 	err->type = evf_ok;
 	fclose(config);
 	return filters;

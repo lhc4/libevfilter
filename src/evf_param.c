@@ -33,6 +33,7 @@
 
 #include "evf_param.h"
 #include "evf_err.h"
+#include "evf_func.h"
 
 //#define DPRINT(...) { fprintf(stderr, "%s: %i: ", __FILE__, __LINE__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n"); }
 #define DPRINT(...)
@@ -214,14 +215,6 @@ static int evfilter_load_bool(union evf_err *err, char *str, int *val,
 	return -1;
 }
 
-/* 
- * Eats all white-spaces
- */
-static void evfilter_eat_spaces(char **str)
-{
-	while (isspace(**str)) (*str)++;
-}
-
 /*
  * Converts string into int key.
  */
@@ -276,7 +269,7 @@ static char *evfilter_get_name(char **str)
 {
 	char *name;
 	
-	evfilter_eat_spaces(str);
+	evf_eat_spaces(str);
 	name = *str;
 
 	/*
@@ -290,7 +283,7 @@ static char *evfilter_get_name(char **str)
 		}
 	}
 
-	evfilter_eat_spaces(str);
+	evf_eat_spaces(str);
 	
 	if (**str == '=')
 		(*str)++;
@@ -321,7 +314,7 @@ static char *evfilter_get_value(char **str)
 	char *param;
 	char enc = 0;
 	
-	evfilter_eat_spaces(str);
+	evf_eat_spaces(str);
 	
 	/*
 	 * String is enclosed in " or '

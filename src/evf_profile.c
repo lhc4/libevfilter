@@ -31,6 +31,7 @@
 #include "evf_err.h"
 #include "evf_profile.h"
 #include "evf_input.h"
+#include "evf_msg.h"
 
 /* 
  * suppose input device names are short enough
@@ -159,6 +160,7 @@ struct evf_filter *evf_load_profile(const char *path, int fd,
 
 				if (has_matched) {
 					/* try to load filters */
+					evf_msg( EVF_INFO, "Loading config file '%s' in directory '%s'.", value, path );
 					tmp = evf_load_filters_compose(path,
 					                               value,
 								       err);

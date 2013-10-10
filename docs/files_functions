@@ -17,6 +17,9 @@ evf_filter.c : list of filters and their params
 	evf_filters_merge() : concatenates two lists
 	evf_filters_print() : prints list items to STDOUT
 
+evf_func.c : util functions
+	evf_eat_spaces() : skips spaces from beginning
+
 evf_handle.c : list of ( handle, filter, event callback )
 	static struct evf_handle *handles : list of handles
 	handle_free() : remove handle from list
@@ -69,7 +72,6 @@ evf_line.c : list of per-device filters
 	evf_line_print() : prints filters to STDOUT
 
 evf_loader.c : parsing filter config files
-	eat_white_spaces() : skips spaces from beginning
 	get_filter_name() : if file starts with /^\s*FilterName./, reads rest of the line, otherwise fails	TODO: should skip empty/comment lines
 	get_filter_params() : takes file, copies out everything until 'EndFilter'
 	evf_load_filters() : tries to read FilterName sections from beginning of the file (otherwise fails), returns them in a list
@@ -91,7 +93,6 @@ evf_param.c : parsing filter config parameters
 	evfilter_load_int() : strtol(), error handling, checking limits
 	evfilter_load_file() : fopen(), support for "stdout" or "stderr"
 	evfilter_load_bool() : /^(True|Yes|On|False|No|Off)$/i or error
-	evfilter_eat_spaces() : skips spaces from beginning	TODO: looks the same as evf_loader.c:eat_white_spaces()
 	evfilter_load_key() : calls keyparser_getkey()
 	static char *evtypes[] : event type names
 	evfilter_load_evtype() : event type string to int
