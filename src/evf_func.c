@@ -22,7 +22,9 @@
  *                                                                            *
  ******************************************************************************/
 
+#include <stdio.h>
 #include <ctype.h>
+#include <string.h>
 
 /*
  * Eats all white-spaces
@@ -32,4 +34,28 @@ void evf_eat_spaces(char **str)
 	while (isspace(**str)) (*str)++;
 }
 
+/*
+ * Reads lines from config, removes coments and empty lines
+ */
+void evf_read_line_preprocess(FILE *config, char *buf, size_t buf_len)
+{
+	char str_buf[buf_len];
+	char *line;
+
+	do	{
+		line=str_buf;
+		*line='\0';
+		fscanf(config, "%4096[^\n]\n", line);
+		evf_eat_spaces(&line);
+
+		if( *line=='#' )
+			*line='\0';
+
+		if( *line )
+			break;
+
+	} while( !feof(config) );
+
+	strncpy(buf,line,buf_len);
+}
 

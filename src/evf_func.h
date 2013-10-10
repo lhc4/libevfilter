@@ -30,5 +30,10 @@
  */
 void evf_eat_spaces(char **str);
 
+/*
+ * Reads lines from config, removes coments and empty lines
+ */
+void evf_read_line_preprocess(FILE *config, char *buf, size_t buf_len);
+
 
 #endif /* __EVF_FUNC_H__ */

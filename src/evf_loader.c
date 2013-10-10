@@ -50,9 +50,12 @@ static int get_filter_name(FILE *config, char *buf, size_t buf_len)
 	char str_buf[4096];
 	char *line = str_buf;
 
-	fscanf(config, "%4096[^\n]\n", line);
+/*	fscanf(config, "%4096[^\n]\n", line);
 	
-	evf_eat_spaces(&line);
+	evf_eat_spaces(&line);*/
+
+	evf_read_line_preprocess( config, line, 4096 );
+	evf_msg(EVF_DEBUG, "get_filter_name : read '%s'.", line );
 
 	if (strncasecmp("FilterName", line, 10))
 		return -1;
@@ -83,7 +86,10 @@ static int get_filter_params(FILE *config, char *buf, size_t buf_len)
 	buf[0] = '\0';
 	
 	for (;;) {
-		fscanf(config, "%4096[^\n]\n", line);
+/*		fscanf(config, "%4096[^\n]\n", line); */
+
+		evf_read_line_preprocess( config, line, 4096 );
+		evf_msg(EVF_DEBUG, "get_filter_params : read '%s'.", line );
 
 		len = strlen(line);
 	
@@ -118,7 +124,7 @@ struct evf_filter *evf_load_filters(const char *path, union evf_err *err)
 	char filter[256];
 	char params[4096];
 	struct evf_filter *filters = NULL, *last_filter, *tmp;
-	int count=1;
+	int count=0,ret;
 
 	if (config == NULL) {
 		//TODO: context to err
@@ -128,13 +134,18 @@ struct evf_filter *evf_load_filters(const char *path, union evf_err *err)
 	}
 
 	do  {
-		if (get_filter_name(config, filter, 256) != 0) {
+		ret = get_filter_name(config, filter, 256);
+
+		if( feof(config) )
+			break;
+
+		if (ret != 0) {
 			//TOOD: syntax error, expecting FilterName, fill err
 			printf("evf_load_filter: get_filter_name ERR\n");
 			goto err;
 		}
 		
-		if (get_filter_params(config, params, 4096) != 0) {
+		if (get_filter_params(config, params, 4096) != 0 ) {
 			//TODO: eof while looking for EndFilter, fill err
 			printf("evf_load_filter: get_filter_params ERR\n");
 			goto err;
@@ -169,7 +180,7 @@ struct evf_filter *evf_load_filters(const char *path, union evf_err *err)
 
 	} while (!feof(config));
 	
-	evf_msg( EVF_INFO, "Loaded %i filters.", count );
+	evf_msg( EVF_INFO, "Loaded %i filter(s).", count );
 	err->type = evf_ok;
 	fclose(config);
 	return filters;
