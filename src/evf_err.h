@@ -49,6 +49,8 @@ enum evf_err_par_t {
 	evf_einval,   /* invalid value; fills: value, name, err and type     */
 	evf_erange,   /* value out of range; fills: value, name, err and lim */
 	evf_eredef,   /* value redefined; fills: value, name and err         */
+	evf_nofname,  /* missing expected filter name                        */
+	evf_noparams, /* missing expected parameters section                 */
 };
 
 /*

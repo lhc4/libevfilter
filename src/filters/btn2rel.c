@@ -181,14 +181,14 @@ struct evf_filter *evf_btn2rel_alloc(int key_down, int key_up, int key_left, int
 }
 
 static struct evf_param btn2rel_params[] = {
-	{ "keyup"    , evf_key, NULL },
-	{ "keydown"  , evf_key, NULL },
-	{ "keyleft"  , evf_key, NULL },
-	{ "keyright" , evf_key, NULL },
-	{ "leftbtn"  , evf_key, NULL },
-	{ "middlebtn", evf_key, NULL },
-	{ "rightbtn" , evf_key, NULL },
-	{ NULL       ,       0, NULL },
+	{ "keyup"    , evf_key, NULL, "Key to move pointer up",     NULL },
+	{ "keydown"  , evf_key, NULL, "Key to move pointer down",   NULL },
+	{ "keyleft"  , evf_key, NULL, "Key to move pointer left",   NULL },
+	{ "keyright" , evf_key, NULL, "Key to move pointer right",  NULL },
+	{ "leftbtn"  , evf_key, NULL, "Key to press left button",   NULL },
+	{ "middlebtn", evf_key, NULL, "Key to press middle button", NULL },
+	{ "rightbtn" , evf_key, NULL, "Key to press right button",  NULL },
+	{ NULL       ,       0, NULL, NULL,                         NULL },
 };
 
 struct evf_filter *evf_btn2rel_creat(char *params, union evf_err *err)

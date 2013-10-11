@@ -50,12 +50,7 @@ static int get_filter_name(FILE *config, char *buf, size_t buf_len)
 	char str_buf[4096];
 	char *line = str_buf;
 
-/*	fscanf(config, "%4096[^\n]\n", line);
-	
-	evf_eat_spaces(&line);*/
-
 	evf_read_line_preprocess( config, line, 4096 );
-	evf_msg(EVF_DEBUG, "get_filter_name : read '%s'.", line );
 
 	if (strncasecmp("FilterName", line, 10))
 		return -1;
@@ -86,10 +81,7 @@ static int get_filter_params(FILE *config, char *buf, size_t buf_len)
 	buf[0] = '\0';
 	
 	for (;;) {
-/*		fscanf(config, "%4096[^\n]\n", line); */
-
 		evf_read_line_preprocess( config, line, 4096 );
-		evf_msg(EVF_DEBUG, "get_filter_params : read '%s'.", line );
 
 		len = strlen(line);
 	
@@ -123,6 +115,7 @@ struct evf_filter *evf_load_filters(const char *path, union evf_err *err)
 	FILE *config = fopen(path, "r");
 	char filter[256];
 	char params[4096];
+	char filter_list[4096], *flist=filter_list;
 	struct evf_filter *filters = NULL, *last_filter, *tmp;
 	int count=0,ret;
 
@@ -139,15 +132,21 @@ struct evf_filter *evf_load_filters(const char *path, union evf_err *err)
 		if( feof(config) )
 			break;
 
+		evf_msg( EVF_DEBUG, "Configuring filter %s:", filter );
+
 		if (ret != 0) {
 			//TOOD: syntax error, expecting FilterName, fill err
-			printf("evf_load_filter: get_filter_name ERR\n");
+			evf_msg(EVF_ERR, "Syntax error: expecting FilterName.");
+			err->type = evf_errpar;
+			err->param.etype = evf_nofname;
 			goto err;
 		}
 		
 		if (get_filter_params(config, params, 4096) != 0 ) {
 			//TODO: eof while looking for EndFilter, fill err
-			printf("evf_load_filter: get_filter_params ERR\n");
+			evf_msg(EVF_ERR,"Syntax error: expecting params section ended by 'EndFilter'.");
+			err->type = evf_errpar;
+			err->param.etype = evf_noparams;
 			goto err;
 		}
 		
@@ -178,9 +177,14 @@ struct evf_filter *evf_load_filters(const char *path, union evf_err *err)
 			last_filter       = tmp;
 		}
 
+		/* add filter name to info string */
+		if( flist != filter_list )
+			flist = stpncpy( flist, ", ", 4095-(flist-filter_list) );
+		flist = stpncpy( flist, filter, 4095-(flist-filter_list) );
+
 	} while (!feof(config));
 	
-	evf_msg( EVF_INFO, "Loaded %i filter(s).", count );
+	evf_msg( EVF_INFO, "Loaded %i filter(s): %s.", count, filter_list );
 	err->type = evf_ok;
 	fclose(config);
 	return filters;

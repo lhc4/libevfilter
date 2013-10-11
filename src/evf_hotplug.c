@@ -29,6 +29,7 @@
 
 #include "evf_io_queue.h"
 #include "evf_hotplug.h"
+#include "evf_msg.h"
 
 #define EVF_DEV_PATH "/dev/input/"
 #define EVF_BUF_LEN 1024
@@ -120,11 +121,13 @@ int evf_hotplug_rescan(void)
 			         ev->name);
 			
 			if (dev_plug && ev->mask & IN_CREATE) {
+				evf_msg(EVF_DEBUG, "Plugging new device '%s'.", str);
 				dev_plug(str);
 				nr++;
 			}
 			
 			if (dev_unplug && ev->mask & IN_DELETE) {
+				evf_msg(EVF_DEBUG, "Unplugging removed device '%s'.", str);
 				dev_unplug(str);
 				nr++;
 			}

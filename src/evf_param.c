@@ -34,6 +34,7 @@
 #include "evf_param.h"
 #include "evf_err.h"
 #include "evf_func.h"
+#include "evf_msg.h"
 
 //#define DPRINT(...) { fprintf(stderr, "%s: %i: ", __FILE__, __LINE__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n"); }
 #define DPRINT(...)
@@ -73,6 +74,7 @@ static int evfilter_load_float(union evf_err *err, char *str, float *val,
 	}
 
 	*val = fval;
+	evf_msg( EVF_DEBUG, "Parameter '%s' (float) set to value %f.", param->name, fval );
 
 	return 0;
 }
@@ -139,6 +141,8 @@ static int evfilter_load_int(union evf_err *err, char *str, int *val,
 	}
 
 	*val = ival;
+	evf_msg( EVF_DEBUG, "Parameter '%s' (int) set to value %i.",
+			param->name, ival );
 	
 	return 0;
 }
@@ -172,7 +176,7 @@ static int evfilter_load_file(union evf_err *err, char *str, FILE **f,
 		
 		return -1;
 	}
-	
+	evf_msg( EVF_DEBUG, "Parameter '%s' (file) set to '%s'.", param->name, str );
 	return 0;
 }
 
@@ -212,13 +216,15 @@ static int evfilter_load_bool(union evf_err *err, char *str, int *val,
 	err->param.value = str;
 	err->param.ptype = evf_bool;
 
+	evf_msg( EVF_DEBUG, "Parameter '%s' (bool) set to %s.", param->name,
+			( *val ? "True" : "False" ));
 	return -1;
 }
 
 /*
  * Converts string into int key.
  */
-static int evfilter_load_key(char *str, int *key)
+static int evfilter_load_key(char *str, int *key, struct evf_param *param)
 {
 	int pkey = keyparser_getkey(str);
 
@@ -226,6 +232,8 @@ static int evfilter_load_key(char *str, int *key)
 		return -1;
 
 	*key = pkey;
+
+	evf_msg(EVF_DEBUG,"Parameter '%s' (key) set to %s.", param->name, str);
 
 	return 0;
 }
@@ -242,13 +250,15 @@ static char *evtypes[] = {
 	NULL,
 };
 
-static int evfilter_load_evtype(char *str, int *evtype)
+static int evfilter_load_evtype(char *str, int *evtype, struct evf_param *param)
 {
 	int i;
 
 	for (i = 0; evtypes[i] != NULL; i++)
 		if (!strcasecmp(evtypes[i], str)) {
 			*evtype = i;
+			evf_msg(EVF_DEBUG, "Parameter '%s' (event) set to %s.",
+					param->name, str );
 			return 0;
 		}
 
@@ -439,13 +449,22 @@ int evf_load_params(union evf_err *err, char *cfg, struct evf_param params[],
 
 	for (i = 0; params[i].name != NULL; i++) {
 
-		/* parameter missing */
+		/* parameter missing - use default or fail */
 		if (values[i] == NULL) {
-			err->type        = evf_errpar;
-			err->param.etype = evf_emissing;
-			err->param.name  = params[i].name;
-			
-			return -1;
+			if( params[i].dflt != NULL )	{
+				/* default value */
+				evf_msg(EVF_DEBUG,"Using default value '%s' for parameter '%s'.",
+						params[i].dflt, params[i].name );
+				values[i] = params[i].dflt;
+			}
+			else	{
+				evf_msg(EVF_ERR,"Missing mandatory parameter '%s'.",
+						params[i].name );
+				err->type        = evf_errpar;
+				err->param.etype = evf_emissing;
+				err->param.name  = params[i].name;
+				return -1;
+			}
 		}
 
 		switch (params[i].type) {
@@ -456,7 +475,7 @@ int evf_load_params(union evf_err *err, char *cfg, struct evf_param params[],
 			break;
 			case evf_evtype:
 				if (evfilter_load_evtype(values[i],
-				    va_arg(list, int*))) {
+				    va_arg(list, int*), &params[i])) {
 					err->type        = evf_errpar;
 					err->param.etype = evf_einval;
 					err->param.ptype = evf_evtype;
@@ -468,7 +487,7 @@ int evf_load_params(union evf_err *err, char *cfg, struct evf_param params[],
 			break;
 			case evf_key:
 				if (evfilter_load_key(values[i],
-				    va_arg(list, int*))) {
+				    va_arg(list, int*), &params[i])) {
 					err->type        = evf_errpar;
 					err->param.etype = evf_einval;
 					err->param.ptype = evf_key;
@@ -485,6 +504,8 @@ int evf_load_params(union evf_err *err, char *cfg, struct evf_param params[],
 			break;
 			case evf_str:
 				*va_arg(list, char**) = values[i];
+				evf_msg(EVF_DEBUG,"Parameter '%s' (str) set to %s.",
+						params[i].name,values[i]);
 			break;
 			case evf_bool:
 				if (evfilter_load_bool(err, values[i],

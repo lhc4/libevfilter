@@ -118,7 +118,7 @@ struct evf_filter *evf_abs2rel_alloc(void)
 }
 
 static struct evf_param abs2rel_params[] = {
-	{NULL, 0, NULL},
+	{NULL, 0, NULL, NULL, NULL},
 };
 
 struct evf_filter *evf_abs2rel_creat(char *params, union evf_err *err)

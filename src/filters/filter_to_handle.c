@@ -114,10 +114,10 @@ struct evf_filter *evf_filter_to_handle_alloc(const char *name, int type, int co
 }
 
 static struct evf_param filter_params[] = {
-	{"HandleName", evf_str   , NULL},
-	{"EventType" , evf_evtype, NULL},
-	{"EventCode" , evf_int   , NULL},
-	{        NULL,       0   , NULL},
+	{"HandleName", evf_str   , NULL, "Name of the handle",        NULL },
+	{"EventType" , evf_evtype, NULL, "Type of redirected events", NULL },
+	{"EventCode" , evf_int   , NULL, "Code of redirected events", NULL },
+	{        NULL,       0   , NULL, NULL,                        NULL },
 };
 
 struct evf_filter *evf_filter_to_handle_creat(char *params, union evf_err *err)

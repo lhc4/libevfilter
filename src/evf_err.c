@@ -74,6 +74,12 @@ void evf_err_print(union evf_err *err)
 		case evf_eredef:
 			printf("Parameter `%s' redefined.\n", err->param.name);
 		break;
+		case evf_nofname:
+			printf("Missing expected FilterName directive.\n");
+		break;
+		case evf_noparams:
+			printf("Missing expected filter parameters section ended by EndFilter.\n");
+		break;
 		default:
 			printf("Internal Error: Invalid error number (%i) !\n",
 			       err->param.ptype);

@@ -28,7 +28,7 @@
 enum evf_param_t {
 	evf_key = 0, /* see keys.h             */
 	evf_evtype,  /* event type             */
-	evf_keys,    /* field of keys          */
+/*	evf_keys,       field of keys - unused */
 	evf_int,     /* just number            */
 	evf_float,   /* float                  */
 	evf_str,     /* null terminated string */
@@ -40,9 +40,11 @@ enum evf_param_t {
  * Structures used to define filter parameters.
  */
 struct evf_param {
-	char *name;
-	enum evf_param_t type;
-	void *lim;
+	char *name;		/* parameter name */
+	enum evf_param_t type;	/* parameter type */
+	void *lim;		/* parameter limits, see below */
+	char *desc;		/* parameter description */
+	char *dflt;		/* default value, NULL for mandatory parameters */
 };
 
 /*

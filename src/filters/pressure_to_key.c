@@ -121,9 +121,9 @@ struct evf_filter *evf_pressure_to_key_alloc(int treshold, int key)
 }
 
 static struct evf_param pressure_to_key_params[] = {
-	{ "treshold", evf_int, NULL },
-	{ "key"     , evf_key, NULL },
-	{ NULL      ,       0, NULL },
+	{ "treshold", evf_int, NULL, "Threshold for activating", NULL },
+	{ "key"     , evf_key, NULL, "Key to be sent",           NULL },
+	{ NULL      ,       0, NULL, NULL,                       NULL },
 };
 
 struct evf_filter *evf_pressure_to_key_creat(char *params, union evf_err *err)

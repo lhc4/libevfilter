@@ -118,10 +118,10 @@ struct evf_filter *evf_kalman_alloc(float kx, float ky)
 }
 
 static struct evf_param kalman_params[] = {
-	{ "kx", evf_float, NULL },
-	{ "ky", evf_float, NULL },
-	{ NULL,         0, NULL },
-	{ NULL,         0, NULL },
+	{ "kx", evf_float, NULL, "X gain", NULL },
+	{ "ky", evf_float, NULL, "Y gain", NULL },
+	{ NULL,         0, NULL, NULL,     NULL },
+	{ NULL,         0, NULL, NULL,     NULL },
 };
 
 

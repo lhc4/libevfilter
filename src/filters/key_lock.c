@@ -99,8 +99,8 @@ struct evf_filter *evf_key_lock_alloc(int key)
 }
 
 static struct evf_param filter_params[] = {
-	{"Key", evf_key, NULL},
-	{NULL ,       0, NULL}
+	{"Key", evf_key, NULL, "Key to apply", NULL },
+	{NULL ,       0, NULL, NULL, NULL }
 };
 
 struct evf_filter *evf_key_lock_creat(char *params, union evf_err *err)

@@ -77,9 +77,9 @@ struct evf_filter *evf_key_substitute_alloc(int key_from, int key_to)
 }
 
 static struct evf_param filter_params[] = {
-	{"KeyFrom", evf_key, NULL},
-	{"KeyTo"  , evf_key, NULL},
-	{NULL     ,       0, NULL}
+	{"KeyFrom", evf_key, NULL, "Key to be replaced", NULL },
+	{"KeyTo"  , evf_key, NULL, "Replacement key",    NULL },
+	{NULL     ,       0, NULL, NULL,                 NULL }
 };
 
 struct evf_filter *evf_key_substitute_creat(char *params, union evf_err *err)

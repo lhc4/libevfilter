@@ -98,13 +98,13 @@ struct evf_filter *evf_scale_abs_alloc(int maxx, int maxy, int maxp, int minx, i
 }
 
 static struct evf_param scale_params[] = {
-	{ "maxx", evf_int, NULL },
-	{ "maxy", evf_int, NULL },
-	{ "maxp", evf_int, NULL },
-	{ "minx", evf_int, NULL },
-	{ "miny", evf_int, NULL },
-	{ "minp", evf_int, NULL },
-	{ NULL,   0,       NULL },
+	{ "maxx", evf_int, NULL, "Maximal X from device",        NULL    },
+	{ "maxy", evf_int, NULL, "Maximal Y from device",        NULL    },
+	{ "maxp", evf_int, NULL, "Maximal pressure from device", "32767" },
+	{ "minx", evf_int, NULL, "Minimal X from device",        "0"     },
+	{ "miny", evf_int, NULL, "Minimal Y from device",        "0"     },
+	{ "minp", evf_int, NULL, "Minimal pressure from device", "32767" },
+	{ NULL,   0,       NULL, NULL,                           NULL    },
 };
 
 struct evf_filter *evf_scale_abs_creat(char *params, union evf_err *err)

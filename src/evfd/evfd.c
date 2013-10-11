@@ -64,15 +64,14 @@ static int line_data(struct evf_io_queue_memb *self)
 /*
  * Returns 1 if device is created by evfd.
  */
-static int our_input_device(const char *dev)
+static int our_input_device(const char *dev, char *name, int name_len)
 {
 	int fd = open(dev, O_RDONLY);
-	char name[128];
 
 	if (fd < 0)
 		return 1;
 
-	evf_input_get_name(fd, name, 128);
+	evf_input_get_name(fd, name, name_len);
 
 	close(fd);
 
@@ -88,11 +87,12 @@ static void device_plugged(const char *dev)
 	struct uinput_user_dev dev_info;
 	struct evf_line *line;
 	union evf_err err;
+	char name[128];
 
-	if (our_input_device(dev))
+	if (our_input_device(dev, name, 128))
 		return;
 
-	evf_msg(EVF_DEBUG, "Trying to create input line for %s.", dev);
+	evf_msg(EVF_DEBUG, "Trying to create input line for %s (%s).", dev, name);
 
 	/*
 	 * Create new input device for the other end of input line.
@@ -135,17 +135,18 @@ static void device_plugged(const char *dev)
 
 	/* we have line add it into the queue */
 	if (!evf_io_queue_add(queue, evf_line_fd(line), line_data, line)) {
-		evf_msg(EVF_ERR, "Failed to add input line (%s) to io queue.",
-		         dev);
+		evf_msg(EVF_ERR, "Failed to add input line (%s, %s) to io queue.",
+				dev, name);
 		evf_uinput_destroy(fd);
 		evf_line_destroy(line);
 		return;
 	}
 
 	if ((ret = evf_input_grab(evf_line_fd(line))) != 0)
-		evf_msg(EVF_ERR, "Failed to grab device (%i).", ret);
+		evf_msg(EVF_ERR, "Failed to grab device %s '%s' (%i).",
+				dev, name, ret);
 
-	evf_msg(EVF_INFO, "Evfilter line for %s has been created.", dev);
+	evf_msg(EVF_INFO, "Evfilter line for %s (%s) has been created.", dev, name);
 }
 
 /*

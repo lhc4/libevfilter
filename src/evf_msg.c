@@ -62,7 +62,7 @@ static void evf_msg_stderr(enum evf_msg_t type, const char *fmt, va_list va)
 	if (type <= EVF_MAX)
 		type_name = evf_msg_t_names[type];
 
-	fprintf(stderr, "%s: %s: ", type_name, evf_process_name);
+	fprintf(stderr, "%s\t", type_name );
 	vfprintf(stderr, fmt, va);
 	fprintf(stderr, "\n");
 }

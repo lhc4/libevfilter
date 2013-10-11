@@ -103,9 +103,9 @@ struct evf_filter *evf_rotate_alloc(int rotate_abs_coords, int rotate_rel_coords
 }
 
 static struct evf_param rotate_params[] = {
-	{ "RotateAbs", evf_bool, NULL },
-	{ "RotateRel", evf_bool, NULL },
-	{ NULL       ,        0, NULL },
+	{ "RotateAbs", evf_bool, NULL, "True if absolute events should be rotated", NULL },
+	{ "RotateRel", evf_bool, NULL, "True if relative events should be rotated", NULL },
+	{ NULL       ,        0, NULL, NULL, NULL },
 };
 
 struct evf_filter *evf_rotate_creat(char *params, union evf_err *err)

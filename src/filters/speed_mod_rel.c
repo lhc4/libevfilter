@@ -116,9 +116,9 @@ struct evf_filter *evf_speed_mod_rel_alloc(int xmod, int ymod)
 }
 
 static struct evf_param relspeed_params[] = {
-	{ "xmod", evf_int, NULL },
-	{ "ymod", evf_int, NULL },
-	{ NULL  ,       0, NULL },
+	{ "xmod", evf_int, NULL, "X movement divisor", NULL },
+	{ "ymod", evf_int, NULL, "Y movement divisor", NULL },
+	{ NULL  ,       0, NULL, NULL, NULL },
 };
 
 struct evf_filter *evf_speed_mod_rel_creat(char *params, union evf_err *err)

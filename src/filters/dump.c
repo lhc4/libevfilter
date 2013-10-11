@@ -81,9 +81,9 @@ struct evf_filter *evf_dump_alloc(char *prefix, FILE *f)
 }
 
 static struct evf_param dump_params[] = {
-	{ "prefix", evf_str , NULL },
-	{ "file"  , evf_file, NULL },
-	{ NULL    ,        0, NULL },
+	{ "prefix", evf_str , NULL, "print prefix",     ""   },
+	{ "file"  , evf_file, NULL, "destination file", NULL },
+	{ NULL    ,        0, NULL, NULL, NULL },
 };
 
 struct evf_filter *evf_dump_creat(char *params, union  evf_err *err)

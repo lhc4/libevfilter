@@ -137,8 +137,8 @@ struct evf_filter *evf_weighted_average_abs_alloc(unsigned int n)
 static struct evf_lim_int samples_lim = { 0, 10 };
 
 static struct evf_param average_params[] = {
-	{ "samples", evf_int, &samples_lim },
-	{ NULL,      0,       NULL         },
+	{ "samples", evf_int, &samples_lim, "Number of samples", NULL },
+	{ NULL,      0,       NULL,          NULL,               NULL },
 };
 
 
