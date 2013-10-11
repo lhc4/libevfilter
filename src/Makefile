@@ -13,13 +13,16 @@ HEADERS=$(shell ls ./*.h)
 # object files
 OBJECTS=$(CSOURCES:.c=.o) 
 
-all: tags libevfilter.so
+all: tags libevfilter.so make_evfd
 
 make_keyparser:
 	@cd keyparser && $(MAKE)
 
 make_filters:
 	@cd filters && $(MAKE)
+
+make_evfd:
+	@cd evfd && $(MAKE)
 
 libevfilter.so: make_filters make_keyparser $(OBJECTS) $(HEADERS) $(KEYPARSER_HEADERS)
 	$(CC) --shared -Wl,-soname -Wl,libevfilter.so.0 $(OBJECTS) keyparser/*.o filters/*.o -o libevfilter.so
@@ -45,10 +48,12 @@ install: libevfilter.so
 	ln -s /usr/lib/libevfilter.so /usr/lib/libevfilter.so.0; \
 	fi
 	install -d /usr/include/evfilter/
-	install -m 644 $(INSTALL_HEADERS) /usr/include/evfilter/ 
+	install -m 644 $(INSTALL_HEADERS) /usr/include/evfilter/
+	@cd evfd && $(MAKE) install
 
 # clean!
 clean:
 	rm -rf $(OBJECTS) libevfilter.so
 	@cd keyparser && $(MAKE) clean
 	@cd filters && $(MAKE) clean
+	@cd evfd && $(MAKE) clean
