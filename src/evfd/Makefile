@@ -15,7 +15,8 @@ all: $(BINARY)
 	$(CC) $(CFLAGS) $< -o $@
 
 install:
-	install -m 775 $(BINARY) /usr/sbin/
+	install -d $(RPM_BUILD_ROOT)/usr/sbin
+	install -m 775 $(BINARY) $(RPM_BUILD_ROOT)/usr/sbin/
 
 clean:
 	rm -rf $(BINARY) *.o

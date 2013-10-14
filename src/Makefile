@@ -43,12 +43,13 @@ INSTALL_HEADERS=evfilter.h evf_err.h evf_filter.h evf_hotplug.h      \
 		evf_msg.h evf_func.h
 
 install: libevfilter.so
-	install libevfilter.so /usr/lib/
+	install -d $(RPM_BUILD_ROOT)/usr/lib
+	install libevfilter.so $(RPM_BUILD_ROOT)/usr/lib/
 	if ! [ -e /usr/lib/libevfilter.so.0 ]; then \
-	ln -s /usr/lib/libevfilter.so /usr/lib/libevfilter.so.0; \
+	ln -s libevfilter.so $(RPM_BUILD_ROOT)/usr/lib/libevfilter.so.0; \
 	fi
-	install -d /usr/include/evfilter/
-	install -m 644 $(INSTALL_HEADERS) /usr/include/evfilter/
+	install -d $(RPM_BUILD_ROOT)/usr/include/evfilter/
+	install -m 644 $(INSTALL_HEADERS) $(RPM_BUILD_ROOT)/usr/include/evfilter/
 	@cd evfd && $(MAKE) install
 
 # clean!
