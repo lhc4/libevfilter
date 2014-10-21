@@ -29,7 +29,7 @@
 #include "evf_filter.h"
 #include "evf_err.h"
 #include "evf_loader.h"
-#include "evf_msg.h"
+#include "filters/evf_msg.h"
 #include "evf_func.h"
 
 /*
@@ -52,8 +52,10 @@ static int get_filter_name(FILE *config, char *buf, size_t buf_len)
 
 	evf_read_line_preprocess( config, line, 4096 );
 
-	if (strncasecmp("FilterName", line, 10))
+	if (strncasecmp("FilterName", line, 10))	{
+		evf_msg(EVF_ERR, "Expecting 'FilterName', got '%s'", line);
 		return -1;
+	}
 	
 	line += 11;
 
@@ -66,6 +68,8 @@ static int get_filter_name(FILE *config, char *buf, size_t buf_len)
 	
 	strncpy(buf, line, buf_len);
 	buf[buf_len - 1] = '\0';
+
+	evf_msg(EVF_DEBUG, "Parsed filter name '%s'", buf);
 	
 	return 0;
 }
@@ -88,8 +92,10 @@ static int get_filter_params(FILE *config, char *buf, size_t buf_len)
 		if (!strcasecmp(line, "EndFilter"))
 			break;
 		
-		if (feof(config))
+		if (feof(config))	{
+			evf_msg(EVF_ERR,"Unfinished filter declaration");
 			return -2;
+		}
 
 		/* copy line into buffer and add separator (' ') */
 		if (buf_len > 0 && len < buf_len - 2) {

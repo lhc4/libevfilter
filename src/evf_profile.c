@@ -31,7 +31,7 @@
 #include "evf_err.h"
 #include "evf_profile.h"
 #include "evf_input.h"
-#include "evf_msg.h"
+#include "filters/evf_msg.h"
 
 /* 
  * suppose input device names are short enough
@@ -174,6 +174,7 @@ struct evf_filter *evf_load_profile(const char *path, int fd,
 					if (err->type != evf_ok) {
 						evf_filters_free(filters);
 						fclose(profile);
+						evf_msg(EVF_ERR,"Failed loading '%s'", path);
 						return NULL;
 					}
 

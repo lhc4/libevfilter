@@ -29,7 +29,7 @@
 
 #include "evf_io_queue.h"
 #include "evf_hotplug.h"
-#include "evf_msg.h"
+#include "filters/evf_msg.h"
 
 #define EVF_DEV_PATH "/dev/input/"
 #define EVF_BUF_LEN 1024

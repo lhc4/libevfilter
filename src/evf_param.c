@@ -34,7 +34,7 @@
 #include "evf_param.h"
 #include "evf_err.h"
 #include "evf_func.h"
-#include "evf_msg.h"
+#include "filters/evf_msg.h"
 
 //#define DPRINT(...) { fprintf(stderr, "%s: %i: ", __FILE__, __LINE__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n"); }
 #define DPRINT(...)

@@ -36,6 +36,7 @@
 #include "evf_input.h"
 
 #include "evf_struct.h"
+#include "filters/evf_msg.h"
 
 /*
  * Read events from file descriptor and pass them to filter line
@@ -49,8 +50,10 @@ int evf_line_process(struct evf_line *line)
 	 * happend unless kernel has crashed.
 	 */
 	if (read(line->fd, &ev, sizeof (struct input_event)) < 0) {
-		if (errno != EAGAIN)
+		if (errno != EAGAIN)	{
+			evf_msg(EVF_ERR,"Error reading config file");
 			return -1;
+		}
 	}
 
 	evf_line_process_event(line->begin, &ev);
@@ -72,6 +75,7 @@ static int open_input_device(const char *input_device, union evf_err *err)
 		//TODO: context
 		err->type = evf_errno;
 		err->err_no.err_no = errno;
+		evf_msg(EVF_ERR,"Cannot open device '%s': %s", input_device, strerror(errno));
 	}
 
 	/* doesn't understand ioctl => not an input device */
@@ -116,6 +120,7 @@ struct evf_line *evf_line_create(const char *input_device,
 	if (!even_empty && begin == NULL) {
 		err->type = evf_ok;
 		close(fd);
+		evf_msg(EVF_WARN, "Skipping empty line");
 		return NULL;
 	}
 
@@ -127,6 +132,7 @@ struct evf_line *evf_line_create(const char *input_device,
 		err->err_no.err_no = errno;
 		evf_filters_free(begin);
 		close(fd);
+		evf_msg(EVF_ERR, "Allocating error");
 		return NULL;
 	}
 

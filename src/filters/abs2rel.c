@@ -37,6 +37,7 @@
 
 #include "evf_struct.h"
 #include "evf_priv.h"
+#include "evf_msg.h"
 
 #define INCIF(x) ((x) < 2 ? ((x)++) : (x));
 

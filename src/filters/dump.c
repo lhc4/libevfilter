@@ -42,6 +42,7 @@
 #include "evf_struct.h"
 #include "evf_priv.h"
 #include "evf_input.h"
+#include "evf_msg.h"
 
 struct dump {
 	FILE *f;

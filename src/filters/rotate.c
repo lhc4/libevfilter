@@ -38,6 +38,7 @@
 
 #include "evf_struct.h"
 #include "evf_priv.h"
+#include "evf_msg.h"
 
 struct rotate {
 	int abs_coords;

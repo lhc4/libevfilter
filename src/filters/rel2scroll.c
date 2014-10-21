@@ -36,6 +36,7 @@
 
 #include "evf_struct.h"
 #include "evf_priv.h"
+#include "evf_msg.h"
 
 struct rel2scroll {
 	int x;

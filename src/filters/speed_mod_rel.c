@@ -40,6 +40,7 @@
 
 #include "evf_struct.h"
 #include "evf_priv.h"
+#include "evf_msg.h"
 
 #define sgn(x) ((x)>0?1:(-1))
 

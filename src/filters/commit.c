@@ -32,6 +32,7 @@
 #include <linux/input.h>
 
 #include "evf_struct.h"
+#include "evf_msg.h"
 
 struct commit {
 	void (*commit)(struct input_event*, void *data);
@@ -64,8 +65,12 @@ struct evf_filter *evf_commit_alloc(void (*commit)(struct input_event*, void *da
 	struct evf_filter *evf = malloc(sizeof (struct evf_filter) + sizeof (struct commit));
 	struct commit *tmp;
 
-	if (evf == NULL)
+	evf_msg(EVF_DEBUG, "Creating commit filter");
+
+	if (evf == NULL)	{
+		evf_msg(EVF_ERR, "Allocating error");
 		return NULL;
+	}
 
 	tmp = (struct commit*) evf->data;
 
@@ -77,6 +82,8 @@ struct evf_filter *evf_commit_alloc(void (*commit)(struct input_event*, void *da
 	evf->name   = "Commit";
 	evf->desc   = "Commits events that came trough filters.";
 	evf->next   = NULL;
+
+	evf_msg(EVF_DEBUG, "Commit filter created");
 
 	return evf;
 }

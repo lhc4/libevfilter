@@ -34,6 +34,7 @@
 
 #include "evf_struct.h"
 #include "evf_priv.h"
+#include "evf_msg.h"
 
 static void modify(struct evf_filter *self, struct input_event *ev)
 {

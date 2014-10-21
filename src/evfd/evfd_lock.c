@@ -27,7 +27,7 @@
 #include <sys/stat.h>
 
 #include "evfd_lock.h"
-#include "evf_msg.h"
+#include "filters/evf_msg.h"
 
 #define LOCKFILE "/var/run/evfd.pid"
 

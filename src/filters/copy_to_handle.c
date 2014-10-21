@@ -38,6 +38,7 @@
 #include "evf_struct.h"
 #include "evf_priv.h"
 #include "evf_handle.h"
+#include "evf_msg.h"
 
 struct priv {
 	struct evf_handle *handle;

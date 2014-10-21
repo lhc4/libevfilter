@@ -41,6 +41,7 @@
 
 #include "evf_struct.h"
 #include "evf_priv.h"
+#include "evf_msg.h"
 
 struct pressure {
 	int treshold;

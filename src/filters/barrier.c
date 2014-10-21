@@ -36,6 +36,7 @@
 
 #include "evf_struct.h"
 #include "evf_priv.h"
+#include "evf_msg.h"
 
 struct barrier {
 	unsigned int queue_index;
@@ -89,8 +90,12 @@ struct evf_filter *evf_barrier_alloc(unsigned int history)
 	struct evf_filter *evf = malloc(sizeof(struct evf_filter) + sizeof(struct barrier) + history*sizeof(struct input_event));
 	struct barrier *tmp;
 
-	if (evf == NULL)
+	evf_msg(EVF_DEBUG, "Creating barrier filter");
+
+	if (evf == NULL)	{
+		evf_msg(EVF_ERR, "Allocating error");
 		return NULL;
+	}
 
 	evf->modify = modify;
 	evf->free   = NULL;
@@ -100,6 +105,8 @@ struct evf_filter *evf_barrier_alloc(unsigned int history)
 	tmp = (struct barrier*) evf->data;
 	tmp->queue_size  = history;
 	tmp->queue_index = 0;
+
+	evf_msg(EVF_DEBUG, "Barrier filter created");
 
 	return evf;
 }
