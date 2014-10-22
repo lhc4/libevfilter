@@ -31,29 +31,17 @@ KEYS=`cat keyparser.in | sort`
 echo -en "#ifndef __KEYS_H__\n#define __KEYS_H__\n\n"
 echo -en "#include <linux/input.h>\n\n"
 
+echo "#define NO_KEY 0"
+echo "static int key_values[] = {"
 
-echo -n "static int key_values[] = {"
-
-first=1
 for i in $KEYS; do
-	if [ $first -eq 1 ]; then
-		echo -e "$i,"
-		first=0
-	else
-		echo -e "                    $i,"
-	fi
+	echo -e "\t$i,"
 done
 echo -e "};\n"
 
-first=1
 echo -n "static char *key_names[] = {"
 for i in $KEYS; do
-	if [ $first -eq 1 ]; then
-		echo -n "\""
-		first=0
-	else
-		echo -n "                     \""
-	fi
+	echo -ne "\t\""
 	echo -n `capitalize $i`
 	echo "\","
 done
