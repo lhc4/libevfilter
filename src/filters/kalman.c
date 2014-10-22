@@ -122,7 +122,6 @@ static struct evf_param kalman_params[] = {
 	{ "kx", evf_float, NULL, "X gain", NULL },
 	{ "ky", evf_float, NULL, "Y gain", NULL },
 	{ NULL,         0, NULL, NULL,     NULL },
-	{ NULL,         0, NULL, NULL,     NULL },
 };
 
 

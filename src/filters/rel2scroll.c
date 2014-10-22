@@ -134,8 +134,8 @@ struct evf_filter *evf_rel2scroll_alloc(int trigger_btn, int xmod, int ymod)
 
 static struct evf_param rel2scroll_params[] = {
 	{"TriggerButton", evf_key, NULL, "Key to toggle move / scroll", NULL },
-	{"Xmod",          evf_int, NULL, "Divisor of X movement",       NULL },
-	{"Ymod",          evf_int, NULL, "Divisor of Y movement",       NULL },
+	{"Xmod",          evf_int, NULL, "Divisor of X movement",       "1" },
+	{"Ymod",          evf_int, NULL, "Divisor of Y movement",       "1" },
 	{NULL,                  0, NULL, NULL,                          NULL },
 };
 

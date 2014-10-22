@@ -23,7 +23,7 @@
  *
  * Evfilter FilterToHandle:
  *
- * Send one type of events events to handle.
+ * Send one type of events to handle.
  *
  * Parameters:
  * EventType  evtype

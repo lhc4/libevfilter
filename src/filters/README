@@ -51,11 +51,29 @@ dump.c
  This filter writes human readable decomposition of event into file
  (or stdout or strerr).
 
+key_lock.c
+~~~~~~~~~~
+
+ Parameters:
+
+ Key = key to process
+
+ This filter is used to make the key appear to be pressed, until you press it 
+ second time. Useful for multi keys combinations, when you are unable to hold
+ one key and press another.
 
 key_substitute.c
 ~~~~~~~~~~~~~~~~
 
  Currently broken.
+
+ This filter substitutes one key's events with same events of another key.
+
+ Parameters:
+
+ KeyFrom = key to be replaced
+
+ KeyTo = replacement key
 
 
 no_repeat.c

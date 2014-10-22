@@ -114,7 +114,7 @@ struct evf_filter *evf_barrier_alloc(unsigned int history)
 static struct evf_lim_int history_limit = { 0, 100 };
 
 static struct evf_param barrier_params[] = {
-	{ "history", evf_int, &history_limit, "size of the queue", NULL },
+	{ "history", evf_int, &history_limit, "size of the queue", "50" },
 };
 
 struct evf_filter *evf_barrier_creat(char *params, union evf_err *err)

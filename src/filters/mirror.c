@@ -114,10 +114,10 @@ struct evf_filter *evf_mirror_alloc(int mir_rel_x, int mir_rel_y, int mir_abs_x,
 }
 
 static struct evf_param mirror_params[] = {
-	{ "MirrorRelX", evf_bool, NULL, "True if relative X events shoult be mirrored", NULL  },
-	{ "MirrorRelY", evf_bool, NULL, "True if relative Y events shoult be mirrored", NULL  },
-	{ "MirrorAbsX", evf_bool, NULL, "True if absolute X events shoult be mirrored", NULL  },
-	{ "MirrorAbsY", evf_bool, NULL, "True if absolute Y events shoult be mirrored", NULL  },
+	{ "MirrorRelX", evf_bool, NULL, "True if relative X events shoult be mirrored", "false"  },
+	{ "MirrorRelY", evf_bool, NULL, "True if relative Y events shoult be mirrored", "false"  },
+	{ "MirrorAbsX", evf_bool, NULL, "True if absolute X events shoult be mirrored", "false"  },
+	{ "MirrorAbsY", evf_bool, NULL, "True if absolute Y events shoult be mirrored", "false"  },
 	{         NULL,        0, NULL, NULL,                                           NULL  },
 };
 

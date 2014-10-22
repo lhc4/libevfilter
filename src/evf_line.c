@@ -120,7 +120,6 @@ struct evf_line *evf_line_create(const char *input_device,
 	if (!even_empty && begin == NULL) {
 		err->type = evf_ok;
 		close(fd);
-		evf_msg(EVF_WARN, "Skipping empty line");
 		return NULL;
 	}
 
