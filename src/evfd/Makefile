@@ -1,6 +1,6 @@
 # compilers and tools
 CC=gcc
-CFLAGS=-Wall -W -ggdb -I.. -L.. -levfilter
+CFLAGS=-W -Wall -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -ggdb -I.. -L.. -levfilter
 
 BINARY=evfd
 

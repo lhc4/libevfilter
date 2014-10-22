@@ -1,6 +1,6 @@
 # compilers and tools
 CC=gcc
-CFLAGS=-fPIC -Wall -Wall -ggdb -DDEBUG -Ikeyparser
+CFLAGS=-fPIC -W -Wall -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -ggdb -DDEBUG -Ikeyparser
 
 # source files
 CSOURCES=evf_param.c evf_err.c evf_profile.c evf_filter.c     \
