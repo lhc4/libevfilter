@@ -20,7 +20,7 @@
  ******************************************************************************/
 
 /*
-  
+
   Evfilter daemon. Run filters on input devices accordingly to evfilter
   configuration.
 
@@ -44,7 +44,6 @@ static struct evf_io_queue *queue;
 static void input_commit(struct input_event *ev, void *data)
 {
 	int uinput_fd = (int) data;
-	
 	write(uinput_fd, ev, sizeof (struct input_event));
 }
 
@@ -57,7 +56,7 @@ static int line_data(struct evf_io_queue_memb *self)
 		evf_line_destroy(self->priv);
 		return EVF_IO_QUEUE_REM;
 	}
-	
+
 	return EVF_IO_QUEUE_OK;
 }
 
@@ -92,7 +91,7 @@ static void device_plugged(const char *dev)
 	if (our_input_device(dev, name, 128))
 		return;
 
-	evf_msg(EVF_DEBUG, "Trying to create input line for %s (%s).", dev, name);
+	evf_msg(EVF_INFO, "Device %s\t(%s).", dev, name);
 
 	/*
 	 * Create new input device for the other end of input line.
@@ -110,7 +109,7 @@ static void device_plugged(const char *dev)
 		return;
 	}
 
-	/* 
+	/*
 	 * Create input line (accordingly to evfilter configuration)
 	 * without barrier filter.
 	 *
@@ -146,8 +145,8 @@ static void device_plugged(const char *dev)
 		evf_msg(EVF_ERR, "Failed to grab device %s '%s' (%i).",
 				dev, name, ret);
 
-	evf_msg(EVF_INFO, "Evfilter line for %s (%s) has been created.", dev, name);
-	evf_line_print(line);
+	evf_msg(EVF_DEBUG, "Evfilter line for %s (%s) has been created.", dev, name);
+	evf_filters_print(line->begin);
 }
 
 /*
@@ -222,7 +221,7 @@ int main(int argc, char *argv[])
 		evf_io_queue_destroy(queue, 0);
 		return 1;
 	}
-	
+
 	/* create hotplug handler */
 	if (!evf_io_queue_add(queue, fd, hotplug_data, NULL)) {
 		evf_msg(EVF_ERR, "Can't allocate hotplug queue handler.");
@@ -246,7 +245,7 @@ int main(int argc, char *argv[])
 
 	evf_msg(EVF_NOTICE, "Got signal, exitting ...");
 
-	/* cleanup */	
+	/* cleanup */
 	EVF_IO_QUEUE_MEMB_LOOP(queue, i) {
 		if (i->priv != NULL) {
 			struct evf_line *line = i->priv;
@@ -255,7 +254,7 @@ int main(int argc, char *argv[])
 			evf_input_ungrab(line->fd);
 			/* destroy evf line and get commit priv pointer */
 			fd = (int) evf_line_destroy(line);
-			evf_uinput_destroy(fd);	
+			evf_uinput_destroy(fd);
 		}
 	}
 

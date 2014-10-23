@@ -53,7 +53,8 @@ static int get_filter_name(FILE *config, char *buf, size_t buf_len)
 	evf_read_line_preprocess( config, line, 4096 );
 
 	if (strncasecmp("FilterName", line, 10))	{
-		evf_msg(EVF_ERR, "Expecting 'FilterName', got '%s'", line);
+		if( !feof(config) )
+			evf_msg(EVF_ERR, "Expecting 'FilterName', got '%s'", line);
 		return -1;
 	}
 	
@@ -190,7 +191,7 @@ struct evf_filter *evf_load_filters(const char *path, union evf_err *err)
 
 	} while (!feof(config));
 	
-	evf_msg( EVF_INFO, "Loaded %i filter(s): %s.", count, filter_list );
+	evf_msg( EVF_INFO, "Loaded %i filter(s) from '%s': %s.", count, path, filter_list );
 	err->type = evf_ok;
 	fclose(config);
 	return filters;

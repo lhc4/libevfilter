@@ -27,43 +27,44 @@
 #include "filters/filters.h"
 #include "evf_err.h"
 #include "evf_struct.h"
+#include "filters/evf_msg.h"
 
 /*
  * Global tables
  */
-static const char *evf_filters[] = 
-{ 
- "Dump"              , 
- "NoRepeat"          , 
- "PressureToKey"     , 
- "SpeedMod"          , 
- "Barrier"           , 
- "WeightedAverageAbs", 
- "ScaleAbs"          , 
- "Mirror"            , 
- "Rotate"            , 
- "Abs2Rel"           , 
- "Btn2Rel"           , 
- "Kalman"            , 
- "Rel2Scroll"        , 
- "CopyToHandle"      , 
- "GetFromHandle"     , 
- "KeyLock"           , 
- "FilterToHandle"    , 
- "KeySubstitute"     , 
+static const char *evf_filters[] =
+{
+ "Dump"              ,
+ "NoRepeat"          ,
+ "PressureToKey"     ,
+ "SpeedMod"          ,
+ "Barrier"           ,
+ "WeightedAverageAbs",
+ "ScaleAbs"          ,
+ "Mirror"            ,
+ "Rotate"            ,
+ "Abs2Rel"           ,
+ "Btn2Rel"           ,
+ "Kalman"            ,
+ "Rel2Scroll"        ,
+ "CopyToHandle"      ,
+ "GetFromHandle"     ,
+ "KeyLock"           ,
+ "FilterToHandle"    ,
+ "KeySubstitute"     ,
  NULL                ,
 };
 
-static struct evf_filter* (*evf_creat[])(char *, union evf_err *) = 
-{ 
- evf_dump_creat                , 
- evf_no_repeat_creat           , 
- evf_pressure_to_key_creat     , 
- evf_speed_mod_rel_creat       , 
- evf_barrier_creat             , 
- evf_weighted_average_abs_creat, 
- evf_scale_abs_creat           , 
- evf_mirror_creat              , 
+static struct evf_filter* (*evf_creat[])(char *, union evf_err *) =
+{
+ evf_dump_creat                ,
+ evf_no_repeat_creat           ,
+ evf_pressure_to_key_creat     ,
+ evf_speed_mod_rel_creat       ,
+ evf_barrier_creat             ,
+ evf_weighted_average_abs_creat,
+ evf_scale_abs_creat           ,
+ evf_mirror_creat              ,
  evf_rotate_creat              ,
  evf_abs2rel_creat             ,
  evf_btn2rel_creat             ,
@@ -88,7 +89,7 @@ static int getfilter(const char *name)
 			return i;
 		i++;
 	}
-	
+
 	return -1;
 }
 
@@ -140,7 +141,7 @@ void *evf_filter_free(struct evf_filter *filter)
 	/* call filter cleanup if necessary */
 	if (filter->free != NULL)
 		priv = filter->free(filter);
-	
+
 	free(filter);
 
 	return priv;
@@ -185,7 +186,7 @@ struct evf_filter *evf_filters_merge(struct evf_filter *root,
                                      struct evf_filter *filters)
 {
 	struct evf_filter *last;
-	
+
 	/* first one is empty */
 	if (root == NULL)
 		return filters;
@@ -197,7 +198,7 @@ struct evf_filter *evf_filters_merge(struct evf_filter *root,
 }
 
 /*
- * Debug function, prints linked list of filters to stdout. 
+ * Prints linked list of filters to stdout.
  */
 void evf_filters_print(struct evf_filter *root)
 {
@@ -208,12 +209,12 @@ void evf_filters_print(struct evf_filter *root)
 	for (tmp = root; tmp->next != NULL; tmp = tmp->next)	{
 		if( tmp->status )	{
 			(*(tmp->status))(tmp, buf, len);
-			printf(" -> %s\n",buf);
+			evf_msg(EVF_INFO," -> %s",buf);
 		}
 		else	{
-			printf(" -> %s\n", evf_filter_get_name(tmp));
+			evf_msg(EVF_INFO," -> %s", evf_filter_get_name(tmp));
 		}
 	}
 
-	printf(" -> %s\n", evf_filter_get_name(tmp));
+	evf_msg(EVF_INFO," -> %s", evf_filter_get_name(tmp));
 }
