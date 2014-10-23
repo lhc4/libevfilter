@@ -28,6 +28,7 @@
  * samples = number of samples in history
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <linux/input.h>
 #include <errno.h>
@@ -106,6 +107,12 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 	self->next->modify(self->next, ev);
 }
 
+static void status(struct evf_filter *self, char *buf, int len)
+{
+	struct average *average = (struct average*) self->data;
+	snprintf(buf, len, "weighted_average_abs of last %i values", average->n);
+}
+
 struct evf_filter *evf_weighted_average_abs_alloc(unsigned int n)
 {
 	struct evf_filter *evf = malloc(sizeof (struct evf_filter) + sizeof (struct average) + sizeof (int) * 3 * n);
@@ -129,6 +136,7 @@ struct evf_filter *evf_weighted_average_abs_alloc(unsigned int n)
 
 	evf->modify = modify;
 	evf->free   = NULL;
+	evf->status = status;
 	evf->name   = "Weighted Average Abs";
 	evf->desc   = "Does exponential average of last n samples.";
 

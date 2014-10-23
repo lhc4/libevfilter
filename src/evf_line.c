@@ -226,7 +226,7 @@ void evf_line_print(struct evf_line *line)
 
 	evf_input_get_name(line->fd, name, 256);
 
-	printf("Filter line for input %s (%s)\n ", line->input_device, name);
+	printf("Filter line for input %s (%s)\n", line->input_device, name);
 
 	evf_filters_print(line->begin);
 }

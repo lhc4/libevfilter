@@ -202,9 +202,18 @@ struct evf_filter *evf_filters_merge(struct evf_filter *root,
 void evf_filters_print(struct evf_filter *root)
 {
 	struct evf_filter *tmp;
+	const int len=260;
+	char buf[len];
 
-	for (tmp = root; tmp->next != NULL; tmp = tmp->next)
-		printf("%s->", evf_filter_get_name(tmp));
+	for (tmp = root; tmp->next != NULL; tmp = tmp->next)	{
+		if( tmp->status )	{
+			(*(tmp->status))(tmp, buf, len);
+			printf(" -> %s\n",buf);
+		}
+		else	{
+			printf(" -> %s\n", evf_filter_get_name(tmp));
+		}
+	}
 
-	printf("%s\n", evf_filter_get_name(tmp));
+	printf(" -> %s\n", evf_filter_get_name(tmp));
 }

@@ -1,6 +1,6 @@
 # compilers and tools
 CC=gcc
-CFLAGS=-fPIC -Wall -W -ggdb -DDEBUG -I.. -I../keyparser
+CFLAGS=-fPIC -Wall -Wno-unused-parameter -W -ggdb -DDEBUG -I.. -I../keyparser
 
 # source files
 CSOURCES=commit.c dump.c no_repeat.c pressure_to_key.c speed_mod_rel.c  \

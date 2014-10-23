@@ -31,6 +31,7 @@
  * none
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <linux/input.h>
 #include <errno.h>
@@ -97,6 +98,14 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 		self->next->modify(self->next, ev);
 }
 
+static void status(struct evf_filter *self, char *buf, int len)
+{
+	struct abs2rel *data = (struct abs2rel*) self->data;
+	snprintf(buf, len,
+		"Translating absolute events to relative. Last position=(%i,%i)",
+		data->last_absx, data->last_absy);
+}
+
 struct evf_filter *evf_abs2rel_alloc(void)
 {
 	struct evf_filter *evf = malloc(sizeof (struct evf_filter) + sizeof (struct abs2rel));
@@ -107,6 +116,7 @@ struct evf_filter *evf_abs2rel_alloc(void)
 
 	evf->modify = modify;
 	evf->free   = NULL;
+	evf->status = status;
 	evf->name   = "Abs2Rel";
 	evf->desc   = "Converts absolute possition events to relative.";
 

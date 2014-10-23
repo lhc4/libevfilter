@@ -29,6 +29,7 @@
  * key2
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <linux/input.h>
 #include <errno.h>
@@ -37,6 +38,7 @@
 #include "evf_priv.h"
 #include "evf_handle.h"
 #include "evf_msg.h"
+#include "key_parser.h"
 
 struct priv {
 	int key_from;
@@ -53,6 +55,14 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 	self->next->modify(self->next, ev);
 }
 
+static void status(struct evf_filter *self, char *buf, int len)
+{
+	struct priv *priv = (struct priv*) self->data;
+	const char *from = keyparser_getname(priv->key_from);
+	const char *to = keyparser_getname(priv->key_to);
+	snprintf(buf, len, "KeySubstitute from %s to %s", from, to);
+}
+
 struct evf_filter *evf_key_substitute_alloc(int key_from, int key_to)
 {
 	struct evf_filter *evf = malloc(sizeof (struct evf_filter) +
@@ -66,6 +76,7 @@ struct evf_filter *evf_key_substitute_alloc(int key_from, int key_to)
 
 	evf->modify = modify;
 	evf->free   = NULL;
+	evf->status = status;
 	evf->name   = "KeySubstitute";
 	evf->desc   = "Substitute one key code for another";
 

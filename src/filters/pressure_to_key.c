@@ -34,6 +34,7 @@
  *  Name of the key, to be generated.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <linux/input.h>
@@ -42,6 +43,7 @@
 #include "evf_struct.h"
 #include "evf_priv.h"
 #include "evf_msg.h"
+#include "key_parser.h"
 
 struct pressure {
 	int treshold;
@@ -99,6 +101,14 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 	}
 }
 
+static void status(struct evf_filter *self, char *buf, int len)
+{
+	struct pressure *p = (struct pressure*) self->data;
+	const char *key = keyparser_getname(p->key);
+	const char *pressed = (p->pressed ? "pressed" : "released");
+	snprintf(buf, len, "Pressure2key - key %s treshold %i (%s)", key, p->treshold, pressed);
+}
+
 struct evf_filter *evf_pressure_to_key_alloc(int treshold, int key)
 {
 	struct evf_filter *evf = malloc(sizeof (struct evf_filter) + sizeof (struct pressure));
@@ -115,6 +125,7 @@ struct evf_filter *evf_pressure_to_key_alloc(int treshold, int key)
 
 	evf->modify = modify;
 	evf->free   = NULL;
+	evf->status = status;
 	evf->name   = "Pressure To Key";
 	evf->desc   = "Converts touchscreen pressure to key events.";
 

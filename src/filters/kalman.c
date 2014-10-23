@@ -29,6 +29,7 @@
  * ky -- gain for y
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <linux/input.h>
 #include <errno.h>
@@ -93,6 +94,12 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 	self->next->modify(self->next, ev);
 }
 
+static void status(struct evf_filter *self, char *buf, int len)
+{
+	struct kalman *kalman = (struct kalman*) self->data;
+	snprintf(buf, len, "Kalman filter with kx=%f ky=%f", kalman->kx, kalman->ky);
+}
+
 struct evf_filter *evf_kalman_alloc(float kx, float ky)
 {
 	struct evf_filter *evf = malloc(sizeof (struct evf_filter) + sizeof (struct kalman));
@@ -112,6 +119,7 @@ struct evf_filter *evf_kalman_alloc(float kx, float ky)
 
 	evf->modify = modify;
 	evf->free   = NULL;
+	evf->status = status;
 	evf->name   = "Kalman";
 	evf->desc   = "Kalman filter.";
 

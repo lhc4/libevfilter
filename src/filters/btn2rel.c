@@ -49,6 +49,7 @@
  *
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <linux/input.h>
 #include <errno.h>
@@ -56,6 +57,7 @@
 #include "evf_struct.h"
 #include "evf_priv.h"
 #include "evf_msg.h"
+#include "key_parser.h"
 
 struct btn2rel {
 	/* movement keys */
@@ -154,6 +156,28 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 	self->next->modify(self->next, ev);
 }
 
+static void status( struct evf_filter *self, char *buf, int len )
+{
+	static const char* dirnames[] =
+		{"up", "down", "left", "right", "lbtn", "mbtn", "rbtn", NULL};
+	struct btn2rel *data = (struct btn2rel*) self->data;
+	int values[] =
+		{data->key_up, data->key_down, data->key_left, data->key_right,
+		data->left_btn, data->middle_btn, data->right_btn};
+	int i,l;
+
+	l = snprintf(buf, len, "Keyboard to mouse ( ");
+	for(i=0; dirnames[i]; i++)	{
+
+		if( !values[i] )
+			continue;
+
+		const char *name = keyparser_getname(values[i]);
+		l += snprintf(buf+l, len-l, "%s:%s ", dirnames[i], name);
+	}
+	snprintf(buf+l, len-l, ")");
+}
+
 struct evf_filter *evf_btn2rel_alloc(int key_down, int key_up, int key_left, int key_right, int left_btn, int middle_btn, int right_btn)
 {
 	struct evf_filter *evf = malloc(sizeof (struct evf_filter) + sizeof (struct btn2rel));
@@ -175,6 +199,7 @@ struct evf_filter *evf_btn2rel_alloc(int key_down, int key_up, int key_left, int
 
 	evf->modify = modify;
 	evf->free   = NULL;
+	evf->status = status;
 	evf->name   = "Btn2Rel";
 	evf->desc   = "Translates pressed keys to relative movements.";
 

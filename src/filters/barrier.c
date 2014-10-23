@@ -30,6 +30,7 @@
  *
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <linux/input.h>
 #include <errno.h>
@@ -85,6 +86,14 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 		insert_queue(barrier, ev);
 }
 
+static void status(struct evf_filter *self, char *buf, int len)
+{
+	struct barrier *barrier = (struct barrier*) self->data;
+	snprintf(buf, len, "Barrier queue with %u items (max %u)",
+		barrier->queue_index, barrier->queue_size);
+}
+
+
 struct evf_filter *evf_barrier_alloc(unsigned int history)
 {
 	struct evf_filter *evf = malloc(sizeof(struct evf_filter) + sizeof(struct barrier) + history*sizeof(struct input_event));
@@ -99,6 +108,7 @@ struct evf_filter *evf_barrier_alloc(unsigned int history)
 
 	evf->modify = modify;
 	evf->free   = NULL;
+	evf->status = status;
 	evf->name   = "Barrier";
 	evf->desc   = "Creates barrier so every group of events came at once.";
 

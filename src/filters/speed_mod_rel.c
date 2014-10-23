@@ -34,6 +34,7 @@
  *
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <linux/input.h>
 #include <errno.h>
@@ -91,6 +92,12 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 	self->next->modify(self->next, ev);
 }
 
+static void status(struct evf_filter *self, char *buf, int len)
+{
+	struct relspeed *relspeed = (struct relspeed*) self->data;
+	snprintf(buf, len, "Relspeed slowdown factors (%i,%i)", relspeed->xmod, relspeed->ymod);
+}
+
 struct evf_filter *evf_speed_mod_rel_alloc(int xmod, int ymod)
 {
 	struct evf_filter *evf = malloc(sizeof (struct evf_filter) + sizeof (struct relspeed));
@@ -110,6 +117,7 @@ struct evf_filter *evf_speed_mod_rel_alloc(int xmod, int ymod)
 
 	evf->modify = modify;
 	evf->free   = NULL;
+	evf->status = status;
 	evf->name   = "SpeedMod";
 	evf->desc   = "Slows down your mouse.";
 

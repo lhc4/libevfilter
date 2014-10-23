@@ -30,6 +30,7 @@
  * filters to avoid this.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <linux/input.h>
 #include <errno.h>
@@ -58,6 +59,12 @@ static void *filter_free(struct evf_filter *self)
 	return NULL;
 }
 
+static void status(struct evf_filter *self, char *buf, int len)
+{
+	struct priv *priv = (struct priv*) self->data;
+	snprintf(buf, len, "Getting from handle '%s'", priv->name);
+}
+
 struct evf_filter *evf_get_from_handle_alloc(const char *name)
 {
 	struct evf_filter *evf = malloc(sizeof (struct evf_filter)
@@ -76,6 +83,7 @@ struct evf_filter *evf_get_from_handle_alloc(const char *name)
 
 	evf->modify = modify;
 	evf->free   = filter_free;
+	evf->status = status;
 	evf->name   = "GetFromHandle";
 	evf->desc   = "Gets events from handle.";
 

@@ -31,6 +31,7 @@
  * rotate_rel_coords = bool
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <linux/input.h>
 #include <errno.h>
@@ -82,6 +83,14 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 	self->next->modify(self->next, ev);
 }
 
+static void status(struct evf_filter *self, char *buf, int len)
+{
+	struct rotate *rotate = (struct rotate*) self->data;
+	const char *abs = (rotate->abs_coords ? "abs" : "noabs");
+	const char *rel = (rotate->rel_coords ? "rel" : "norel");
+	snprintf(buf, len, "Rotate X/Y %s %s", abs, rel);
+}
+
 struct evf_filter *evf_rotate_alloc(int rotate_abs_coords, int rotate_rel_coords)
 {
 	struct evf_filter *evf = malloc(sizeof (struct evf_filter) + sizeof (struct rotate));
@@ -94,6 +103,7 @@ struct evf_filter *evf_rotate_alloc(int rotate_abs_coords, int rotate_rel_coords
 
 	evf->modify = modify;
 	evf->free   = NULL;
+	evf->status = status;
 	evf->name   = "Rotate";
 	evf->desc   = "Exchanges relative and/or absoulte possitions.";
 
@@ -104,8 +114,8 @@ struct evf_filter *evf_rotate_alloc(int rotate_abs_coords, int rotate_rel_coords
 }
 
 static struct evf_param rotate_params[] = {
-	{ "RotateAbs", evf_bool, NULL, "True if absolute events should be rotated", "false" },
-	{ "RotateRel", evf_bool, NULL, "True if relative events should be rotated", "false" },
+	{ "RotateAbs", evf_bool, NULL, "True if absolute events should be rotated", "true" },
+	{ "RotateRel", evf_bool, NULL, "True if relative events should be rotated", "true" },
 	{ NULL       ,        0, NULL, NULL, NULL },
 };
 

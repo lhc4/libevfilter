@@ -147,6 +147,7 @@ static void device_plugged(const char *dev)
 				dev, name, ret);
 
 	evf_msg(EVF_INFO, "Evfilter line for %s (%s) has been created.", dev, name);
+	evf_line_print(line);
 }
 
 /*

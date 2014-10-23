@@ -30,6 +30,7 @@
  * HandleName string
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <linux/input.h>
 #include <errno.h>
@@ -42,6 +43,7 @@
 
 struct priv {
 	struct evf_handle *handle;
+	const char *name;
 };
 
 static void modify(struct evf_filter *self, struct input_event *ev)
@@ -64,6 +66,12 @@ static void *filter_free(struct evf_filter *self)
 	return NULL;
 }
 
+static void status(struct evf_filter *self, char *buf, int len)
+{
+	struct priv *priv = (struct priv*) self->data;
+	snprintf(buf, len, "Copying to handle '%s'", priv->name);
+}
+
 struct evf_filter *evf_copy_to_handle_alloc(const char *name)
 {
 	struct evf_filter *evf = malloc(sizeof (struct evf_filter)
@@ -76,6 +84,7 @@ struct evf_filter *evf_copy_to_handle_alloc(const char *name)
 	priv = (struct priv*) evf->data;
 
 	priv->handle = evf_handle_create(name);
+	priv->name = name;
 
 	if (priv->handle == NULL) {
 		free(evf);
@@ -84,6 +93,7 @@ struct evf_filter *evf_copy_to_handle_alloc(const char *name)
 
 	evf->modify = modify;
 	evf->free   = filter_free;
+	evf->status = status;
 	evf->name   = "CopyToHandle";
 	evf->desc   = "Copies all events to handle.";
 

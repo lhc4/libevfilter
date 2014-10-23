@@ -27,6 +27,7 @@
  *
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <linux/input.h>
@@ -60,6 +61,12 @@ static void *filter_free(struct evf_filter *self)
 	return tmp->data;
 }
 
+static void status(struct evf_filter *self, char *buf, int len)
+{
+	snprintf(buf, len, "Commit filter");
+}
+
+
 struct evf_filter *evf_commit_alloc(void (*commit)(struct input_event*, void *data), void *data)
 {
 	struct evf_filter *evf = malloc(sizeof (struct evf_filter) + sizeof (struct commit));
@@ -79,6 +86,7 @@ struct evf_filter *evf_commit_alloc(void (*commit)(struct input_event*, void *da
 	
 	evf->modify = modify;
 	evf->free   = filter_free;
+	evf->status = status;
 	evf->name   = "Commit";
 	evf->desc   = "Commits events that came trough filters.";
 	evf->next   = NULL;

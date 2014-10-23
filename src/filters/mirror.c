@@ -35,6 +35,7 @@
  * mir_rel_y = bool
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <linux/input.h>
 #include <errno.h>
@@ -90,6 +91,15 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 	self->next->modify(self->next, ev);
 }
 
+static void status(struct evf_filter *self, char *buf, int len)
+{
+	struct mirror *mirror = (struct mirror*) self->data;
+	snprintf(buf, len, "Mirror - abs(%i,%i) rel(%i,%i)",
+		mirror->abs_x, mirror->abs_y,
+		mirror->rel_x, mirror->rel_y
+	);
+}
+
 struct evf_filter *evf_mirror_alloc(int mir_rel_x, int mir_rel_y, int mir_abs_x, int mir_abs_y)
 {
 	struct evf_filter *evf = malloc(sizeof (struct evf_filter) + sizeof (struct mirror));
@@ -102,6 +112,7 @@ struct evf_filter *evf_mirror_alloc(int mir_rel_x, int mir_rel_y, int mir_abs_x,
 
 	evf->modify = modify;
 	evf->free   = NULL;
+	evf->status = status;
 	evf->name   = "Mirror";
 	evf->desc   = "Mirrors absolute or relative events.";
 

@@ -31,6 +31,7 @@
  * HandleName string
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <linux/input.h>
 #include <errno.h>
@@ -40,6 +41,8 @@
 #include "evf_priv.h"
 #include "evf_handle.h"
 #include "evf_msg.h"
+
+extern char **evtypes;
 
 struct priv {
 	int type;
@@ -83,6 +86,13 @@ static void *filter_free(struct evf_filter *self)
 	return NULL;
 }
 
+static void status(struct evf_filter *self, char *buf, int len)
+{
+	struct priv *priv = (struct priv*) self->data;
+	snprintf(buf, len, "Sending events of type %s code %i to handle '%s'",
+		evtypes[priv->type], priv->code, (priv->handle ? priv->handle->name : "NULL"));
+}
+
 struct evf_filter *evf_filter_to_handle_alloc(const char *name, int type, int code)
 {
 	struct evf_filter *evf = malloc(sizeof (struct evf_filter)
@@ -103,6 +113,7 @@ struct evf_filter *evf_filter_to_handle_alloc(const char *name, int type, int co
 
 	evf->modify = modify;
 	evf->free   = filter_free;
+	evf->status = status;
 	evf->name   = "FilterToHandle";
 	evf->desc   = "Redirect some type of events to handle.";
 
@@ -126,7 +137,7 @@ struct evf_filter *evf_filter_to_handle_creat(char *params, union evf_err *err)
 	struct evf_filter *evf;
 	int type, code;
 	char *name;
-	
+
 	if (evf_load_params(err, params, filter_params, &name, &type, &code) == -1)
 		return NULL;
 

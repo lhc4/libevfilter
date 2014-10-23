@@ -29,6 +29,7 @@
  * 
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <linux/input.h>
 #include <errno.h>
@@ -37,6 +38,7 @@
 #include "evf_struct.h"
 #include "evf_priv.h"
 #include "evf_msg.h"
+#include "key_parser.h"
 
 struct rel2scroll {
 	int x;
@@ -105,6 +107,17 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 	self->next->modify(self->next, ev);
 }
 
+static void status(struct evf_filter *self, char *buf, int len)
+{
+	struct rel2scroll *data = (void*) self->data;
+	const char *s = (data->trigger_on ? "scrolling" : "moving");
+	snprintf(buf, len, "rel2scroll (%s) - trigger %s, divisors (%i,%i)", s,
+		keyparser_getname(data->trigger_btn),
+		data->xmod, data->ymod
+	);
+
+}
+
 struct evf_filter *evf_rel2scroll_alloc(int trigger_btn, int xmod, int ymod)
 {
 	struct evf_filter *evf = malloc(sizeof (struct evf_filter) +
@@ -116,6 +129,7 @@ struct evf_filter *evf_rel2scroll_alloc(int trigger_btn, int xmod, int ymod)
 
 	evf->modify = modify;
 	evf->free   = NULL;
+	evf->status = status;
 	evf->name   = "Rel2Scroll";
 	evf->desc   = "Converts relative events into scroll events.";
 

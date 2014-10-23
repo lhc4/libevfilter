@@ -60,6 +60,12 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 		self->next->modify(self->next, ev);
 }
 
+void status(struct evf_filter *self, char *buf, int len)
+{
+	/* TODO: here should be filename, but this information is not accessible from here. */
+	snprintf(buf, len, "Dumping to file");
+}
+
 struct evf_filter *evf_dump_alloc(char *prefix, FILE *f)
 {
 	struct evf_filter *evf = malloc(sizeof (struct evf_filter) + sizeof (struct dump) + strlen(prefix) + 1);
@@ -75,6 +81,7 @@ struct evf_filter *evf_dump_alloc(char *prefix, FILE *f)
 	tmp->f      = f;
 	evf->modify = modify;
 	evf->free   = NULL;
+	evf->status = status;
 	evf->name   = "Dump";
 	evf->desc   = "Prints text variant of event into file.";
 

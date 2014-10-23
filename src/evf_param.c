@@ -241,7 +241,7 @@ static int evfilter_load_key(char *str, int *key, struct evf_param *param)
 /*
  * String int event type.
  */
-static char *evtypes[] = {
+char *evtypes[] = {
 	"EventSyn",
 	"EventKey",
 	"EventRel",

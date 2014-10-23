@@ -27,6 +27,7 @@
  *
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <linux/input.h>
@@ -43,6 +44,11 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 		self->next->modify(self->next, ev);
 }
 
+static void status(struct evf_filter *self, char *buf, int len)
+{
+	snprintf(buf, len, "NoRepeat");
+}
+
 struct evf_filter *evf_no_repeat_alloc(void)
 {
 	struct evf_filter *evf = malloc(sizeof (struct evf_filter));
@@ -52,6 +58,7 @@ struct evf_filter *evf_no_repeat_alloc(void)
 
 	evf->modify = modify;
 	evf->free   = NULL;
+	evf->status = status;
 	evf->name   = "No Repeat";
 	evf->desc   = "Throws away all key repeat events.";
 

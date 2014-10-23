@@ -44,6 +44,8 @@ struct evf_filter {
 	void (*modify)(struct evf_filter *self, struct input_event *ev);
 	/* Either NULL, or additional free helper */
 	void *(*free)(struct evf_filter *self);
+	/* Either NULL, or function to print status */
+	void (*status)(struct evf_filter *self, char *buf, int len);
 	/* Filter name */
 	char *name;
 	/* Filter description */
