@@ -131,10 +131,11 @@ void evfd_release_lock(void)
 {
 	evf_msg(EVF_DEBUG, "Releasing lockfile %s", LOCKFILE);
 
-	if (unlink(LOCKFILE) == -1)
+	if (unlink(LOCKFILE) == -1)	{
 		if (errno == ENOENT)
 			return;
 	
-	evf_msg(EVF_ERR, "Can't unlink lockfile %s: %s", LOCKFILE,
-	         strerror(errno));
+		evf_msg(EVF_ERR, "Can't unlink lockfile %s: %s", LOCKFILE,
+				strerror(errno));
+	}
 }
