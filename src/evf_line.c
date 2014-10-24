@@ -55,7 +55,7 @@ int evf_line_process(struct evf_line *line)
 			return -1;
 		}
 		else if (errno != EAGAIN )	{
-			evf_msg(EVF_ERR,"Error reading config file: %s", sys_errlist[errno]);
+			evf_msg(EVF_ERR,"Error reading config file: %s", strerror(errno));
 			return -1;
 		}
 	}
