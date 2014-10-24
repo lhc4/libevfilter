@@ -50,8 +50,12 @@ int evf_line_process(struct evf_line *line)
 	 * happend unless kernel has crashed.
 	 */
 	if (read(line->fd, &ev, sizeof (struct input_event)) < 0) {
-		if (errno != EAGAIN)	{
-			evf_msg(EVF_ERR,"Error reading config file");
+		if (errno == ENODEV)	{
+			evf_msg(EVF_NOTICE,"Device %s is gone", line->input_device);
+			return -1;
+		}
+		else if (errno != EAGAIN )	{
+			evf_msg(EVF_ERR,"Error reading config file: %s", sys_errlist[errno]);
 			return -1;
 		}
 	}
